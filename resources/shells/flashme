@@ -1,0 +1,11 @@
+#!/bin/bash
+! [[ -z "$1"  ]] && TARGET=$1
+if ! [[ -z "$2" ]]; then
+    MODE="-t $2"
+else
+    MODE=""
+fi
+# This virtual environment could exist but not be setup yet. Flashme throws error
+# Uncommented until necessity for someone with penv comes up.
+# [[ -d ~/.platformio/penv ]] && echo "PlatformIO Virtual environment detected. Activating" && source ~/.platformio/penv/bin/activate
+cd $tmw_DIR/firmware && platformio run -e $TARGET $MODE

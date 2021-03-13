@@ -1,0 +1,10 @@
+# Files created by the IDE
+firmware/.gitignore
+
+*.pio
+*.vscode
+*.code-workspace
+*.swp
+
+firmware/external/*
+firmware/log/*

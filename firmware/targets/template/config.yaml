@@ -1,0 +1,8 @@
+template:
+    ros1:
+        testbed_msgs:
+            ref: https://github.com/prothen/testbed_msgs.git
+        # repositoryname_msgs:
+        #    ref: git@github.com:prothen/teensy_middleware.git
+        #    deploy_key:
+        #    branch: master

@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Convenience script for automatic ROS header file generation
+#
+# Author: Philipp Rothenhäusler, Smart Mobility Lab KTH, Stockholm 2020
+#
+#
+
+#############################################
+# PARSE ARGUMENTS
+echo -e "Input arguments received:\n\t $@"
+
+for arg in "$@"
+do
+    echo "Received argument: $arg"
+done
+
+echo "Trigger command:."
+echo -e "Execute command:\n\t ${ST_MSG_DEPS[i]}"
+eval "$1"
+exit
