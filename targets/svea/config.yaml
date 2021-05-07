@@ -1,0 +1,6 @@
+svea:
+    ros1:
+        vehicle_msgs: 
+            ref: git@github.com:KTH-SML/vehicle_msgs.git
+            deploy_key: svea
+            branch: master

@@ -6,5 +6,9 @@ firmware/.gitignore
 *.code-workspace
 *.swp
 
-firmware/external/*
-firmware/log/*
+external/*
+log/*
+
+lib/ros_local/*
+lib/ros_remote/*
+tmp/*

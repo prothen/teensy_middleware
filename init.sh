@@ -11,27 +11,27 @@ cw="$(readlink -m "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )")"
 source $cw/resources/shells/teensy_mw_watermark
 echo "SETUP: Start configuration of tool chain:"
 
-echo "PATH: Install convenience scripts? [y/*]"
-read -s PATH_INSTALL
-# Add resources shell script folder to system PATH
-[ $PATH_INSTALL == "y" ] && ext="export PATH=$cw/resources/shells:\$PATH"
-if [ -z ${ext+1} ]; then
-    echo -e "\tNo installation of convenience scripts desired."
-    echo "PATH: DONE."
-else
-    echo -e "\tChecking configuration now..."
-    ADDME=()
-    ADDME+=("export tmw_DIR=$cw")
-    ADDME+=("$ext")
-    for entry in "${ADDME[@]}"
-    do
-        if grep -Fxq "$entry" ~/.profile; then echo -e "\t\tFound: Skip entry:";
-        else echo "$entry" >> ~/.profile; echo -e  "\t\tNot found: Added entry:"; fi
-        echo -e "\t\t\t $entry"
-    done
-    echo -e "\t\tEntries available in new session (re-login)."
-    echo "PATH: DONE."
-fi
+# echo "PATH: Install convenience scripts? [y/*]"
+# read -s PATH_INSTALL
+# # Add resources shell script folder to system PATH
+# [ $PATH_INSTALL == "y" ] && ext="export PATH=$cw/resources/shells:\$PATH"
+# if [ -z ${ext+1} ]; then
+#     echo -e "\tNo installation of convenience scripts desired."
+#     echo "PATH: DONE."
+# else
+#     echo -e "\tChecking configuration now..."
+#     ADDME=()
+#     ADDME+=("export tmw_DIR=$cw")
+#     ADDME+=("$ext")
+#     for entry in "${ADDME[@]}"
+#     do
+#         if grep -Fxq "$entry" ~/.profile; then echo -e "\t\tFound: Skip entry:";
+#         else echo "$entry" >> ~/.profile; echo -e  "\t\tNot found: Added entry:"; fi
+#         echo -e "\t\t\t $entry"
+#     done
+#     echo -e "\t\tEntries available in new session (re-login)."
+#     echo "PATH: DONE."
+# fi
 
 echo "UDEV: Test if rules installed:"
 if ! [ -f "/etc/udev/rules.d/99-teensy-mw.rules" ]; then

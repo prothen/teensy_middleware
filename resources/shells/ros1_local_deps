@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Convenience script for automatic ROS header file generation
+#
+# Author: Philipp Rothenhäusler, Smart Mobility Lab KTH, Stockholm 2020
+#
+#
+#############################################
+
+#############################################
+# CHECK TOOL CHAIN
+test -z "$(command -v rosrun)" && echo "Please install ROS or otherwise verify that your ROS environment is sourced properly." && exit
+test -z "$(command -v catkin)" && echo "Missing catkin toolchain. Enter your password for sudo and otherwise install with 'sudo apt-get install python-catkin-tools'" && sudo apt-get install python-catkin-tools
+
+#############################################
+# PREPARE MESSAGE GENERATION TOOL CHAIN
+lib_dir="$(pwd)/lib/"
+ros_folder="ros_local"
+
+#############################################
+# BUILD SOURCED MESSAGES
+echo "Building ROS serial libraries from $ROS_PACKAGE_PATH"
+rm -drf $lib_dir/$ros_folder/* && mkdir -p $lib_dir/$ros_folder
+cd $lib_dir/$ros_folder && echo -e "BUILD ROS_HEADERS: \n -> in: $(pwd)"
+# Hack to decide if python 2 or 3 should be used
+# required for melodic compatability
+python_ver="$(python -c 'import os; print("".join(s.split(".")[0] if "python" in s else "" for s in os.environ["PYTHONPATH"].split(":")[0].split("/")))')"
+rosrun --prefix $python_ver rosserial_arduino make_libraries.py $lib_dir/$ros_folder/
+mv $lib_dir/$ros_folder/ros_lib/* $lib_dir/$ros_folder/>/dev/null && cd .. && rm -drf $lib_dir/$ros_folder/ros_lib
+
+echo "Completed test script successfully." && exit

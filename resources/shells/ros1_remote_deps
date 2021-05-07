@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# Convenience script for automatic ROS header file generation
+#
+# Author: Philipp Rothenhäusler, Smart Mobility Lab KTH, Stockholm 2020
+#
+#
+#############################################
+# PARSE ARGUMENTS
+echo -e "Input arguments received:\n\t $@"
+idx=0
+ST_MSG_DEPS=()
+for arg in "$@"
+do
+    if [ $idx -eq 0 ]; then
+        echo "Set project name: $arg"
+        ST_PROJECT_NAME=$1
+    else
+        echo -e "Parse repository: \n\t $arg"
+        ST_MSG_DEPS+=$arg
+    fi
+    idx+=1
+done
+if [ $idx -eq 1 ]; then
+    echo "No additional ROS message repositories received!"
+    ROS_ONLY_STD_MSGS=true
+else
+    echo "Received additional libraries."
+    ROS_ONLY_STD_MSGS=false
+fi
+
+echo "ROS1 interface chosen. Configuring dependencies ... (tzz its 2021...)"
+
+#############################################
+# CHECK TOOL CHAIN
+test -z "$(command -v rosrun)" && echo "Please install ROS or otherwise verify that your ROS environment is sourced properly." && exit
+test -z "$(command -v catkin)" && echo "Missing catkin toolchain. Enter your password for sudo and otherwise install with 'sudo apt-get install python-catkin-tools'" && sudo apt-get install python-catkin-tools
+
+#############################################
+# DEFINE ROS UNDERLAY
+tmp=$(echo "$(which roscore)" | awk -F'bin' '{print $1}')
+dist="$(echo $tmp | awk -F'ros' '{print $2}' | awk -F'/' '{print $2}')"
+tmp+="setup.bash"
+ST_ROS_UNDERLAY=$tmp
+source $ST_ROS_UNDERLAY
+
+#############################################
+# PREPARE MESSAGE GENERATION TOOL CHAIN
+echo "Pythonpath in bash: $PYTHONPATH"
+tmp_dir="$(pwd)/tmp/$ST_PROJECT_NAME"
+lib_dir="$(pwd)/lib/"
+ros_folder="ros_remote"
+# -> for other middleware this might not be compliant with binaries from the distribution, then use:
+if ! [ -f "$tmp_dir/rosserial_ws/devel/setup.bash" ]; then
+    echo -e "BUILD rosserial arduino from upstream:"
+    mkdir -p $tmp_dir/rosserial_ws/src/rosserial
+    cd $tmp_dir/rosserial_ws/src/ && git clone -qb noetic-devel --depth 1 --progress https://github.com/ros-drivers/rosserial.git
+    cd .. && catkin config --blacklist rosserial_{test,server,xbee,vex_v5,vex_cortex,tivac,windows,mbed,embeddedlinux} && catkin build # -DPYTHON_EXECUTABLE="$(which python)"
+else
+    echo "Found built rosserial_ws directory. Skipping rosserial build."
+    echo "Delete $tmp_dir/rosserial_ws for clean rebuild."
+fi
+ST_ROSSERIAL=$tmp_dir/rosserial_ws/devel/setup.bash
+# Source rosserial build from source to guarantee noetic Python 3 compliance
+source $ST_ROSSERIAL
+
+if ! $ROS_ONLY_STD_MSGS; then
+    if ! [ -f "$tmp_dir/msg_ws/devel/setup.bash" ]; then
+        #############################################
+        # FETCH CUSTOM MESSAGE REPOSITORIES
+        rm -drf $tmp_dir/msg_ws*
+        mkdir -p $tmp_dir/msg_ws/src>/dev/null
+        cd $tmp_dir/msg_ws/src
+        for ((i = 0; i < ${#ST_MSG_DEPS[@]}; i++))
+        do
+            echo -e "Execute command:\n\t ${ST_MSG_DEPS[i]}"
+            eval "${ST_MSG_DEPS[i]}"
+        done
+        cd .. && echo -e "BUILD MESSAGES: \n -> in: $(pwd)" && catkin build # -DPYTHON_EXECUTABLE="$(which python)"
+    else
+        echo "Found built msg_ws directory. Skipping fetching and building custom messages."
+        echo "Delete $tmp_dir/msg_ws to fetch messages from remote."
+    fi
+    #############################################
+    # SOURCE CUSTOM MESSAGES 
+    cd $tmp_dir/msg_ws
+    source devel/setup.bash
+else
+    echo "Skipped fetching and building custom libraries (No additional libraries provided.)"
+fi
+
+#############################################
+# BUILD SOURCED MESSAGES
+#if ! [ -d $lib_dir/$ros_folder ]; then
+echo "Building ROS serial libraries"
+rm -drf $lib_dir/$ros_folder/* && mkdir -p $lib_dir/$ros_folder
+cd $lib_dir/$ros_folder && echo -e "BUILD ROS_HEADERS: \n -> in: $(pwd)"
+rosrun rosserial_arduino make_libraries.py $lib_dir/$ros_folder/
+mv $lib_dir/$ros_folder/ros_lib/* $lib_dir/$ros_folder/>/dev/null && cd .. && rm -drf $lib_dir/$ros_folder/ros_lib
+#mv $lib_dir/$ros_folder/ros_lib/* ./>/dev/null && cd .. && rm -drf ros_lib
+#cp -r $tmp_dir/ros $lib_dir/
+#else
+#    echo "Skip building ROS message library. (Found ROS message directory in $lib_dir.)"
+#fi
+#cd $tmp_dir #&& rm -drf {msg_ws,rosserial_ws}
+
+echo "Completed test script successfully." && exit
