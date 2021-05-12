@@ -3,7 +3,7 @@ This repository contains firmware for the SVEA Powerboard 2.
 PlatformIO is used to build and upload the firmware. 
 Instructions and scripts for installing PlatformIO 
 toether with other dependencies are included in this repository.
-See the [Setup] section for further instructions. 
+See the [Setup](#setup) section for further instructions. 
 ## Repository structure
 - [Source code location](src/)
 - [Libraries](lib/)
@@ -16,56 +16,84 @@ See the [Setup] section for further instructions.
 There are three options for how to install platformIO.
 The two first options will create a virtual environment for PlatformIO.
 The last option will install the PlatformIO library directly with
-your other python libraries.
+your other python libraries. 
+
 ### For development with Visual Code
-1. Install the platformIO plugin for VS Code as described in [https://platformio.org/install/ide?install=vscode]
-2. Go to the root folder of this repository and run `bash init.sh`
-__Note: Deactivate any conda environment before installing the platformIO environment.__
-### Command line only 
-1. Install PlatformIO according to thses instructions: 
-   [https://docs.platformio.org/en/latest//core/installation.html#installer-script]
-2. Go to the root folder of this repository and run `bash init.sh`
+_Recommended for development_
+1. `git clone` this repository to a folder on your computer
+2. [If a conda environemnt is acitve] Deactivate any active conda environment with `conda deactivate`
+3. Install the platformIO plugin for VS Code as described in https://platformio.org/install/ide?install=vscode
+4. Go to the root folder of this repository and run `bash init.sh`
+5. Open the reository folder in VS Code
+
+### Command line only
+_Recommended for just flashing new firmware_
+1. `git clone` this repository to a folder on your computer
+2. [If a conda environemnt is acitve] Deactivate any active conda environment with `conda deactivate`
+3. Install PlatformIO by executing: `python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platformio/master/scripts/get-platformio.py)"`
+4. Go to the root folder of this repository and run `bash init.sh`
 
 ### I'm in a hurry and I just need to flash this Powerboard NOW
-1. Go to the root folder of this repository and run `bash init.sh`
+_Not recommended unless the previous methods has already failed_
+1. `git clone` this ropository to a folder on your computer.
+2. Go to the root folder of this repository and run `bash init.sh`
 
 ## Usage
-To quickly compile and upload firmware:
+### Compile and upload firmware
+#### From command line
 1. Navigate to the root folder of the repository
-2. Connect the Powerboard via USB
-3. Execute `pio run -t upload`
+2. Actiate the PlatformIO vritual environment with `source ~/.platformio/penv/bin/activate`
+3. Connect the Powerboard via USB
+4. Execute `pio run -t upload`
 
-VS Code can also be used to build and upload the firmware to the Powerboard. 
+#### From VS Code
+VS Code can be used to build and upload the firmware to the Powerboard if the PlatformIO plugin is installed. 
+1. Open the root folder of this repository in VS Code
+2. Go to the _PlatformIO_ tab in VS code
+3. Klick on the _Default_ folder
+4. Open the _General_ tab
+5. Klick on _Upload All_ (Only one environemnt will actually be built and uploaded) 
+The virtual environment will automatically be activated by the PlatformIO plugin.
 
 ### Available environments 
-There are 5 different environemnts defined in [platformio.ini].
-The only difference between the environemnts is how the rosserial libraries are generated.
+There are 5 different environemnts defined in [platformio.ini](platformio.ini). 
+The difference between these environemnts is how the rosserial libraries are created.
+The environment can be set with the `-e` flag, e. g. `-e *environment name*`.
 
-`use_included_libs` is the default environement and uses the rosserial libraries
-included in [lib/ros_included]. This is the environment that runs if no 
-`--environment` argument is passed to `pio run`. 
-This environment should be preferable as long as no messages have been changed.
+#### use_included_libs
+The default environement. 
+Uses the rosserial libraries included in [lib/ros_included](lib/ros_included). 
+This is the environment that runs if no 
+`--environment` or `-e` argument is passed to `pio run`. 
+This environment is can be used if no messages defintions have been added or changed.
+Note that most of the standard message defitions,
+like `std_msgs`, `geometry_msgs`, and `nav_msgs` are already included.
 
-`build_local_libs` will build the rosserial libraries from the 
-currently sourced ROS workspaces. 
+#### build_local_libs
+Build the rosserial libraries from the currently sourced ROS workspaces.
 Rosserial and all required message definitions have to be included
 in these workspaces, or the compilation will fail.
 Intended to be used for development where messages have been added
 or altered on the current machine.
 The newly built rosserial libraries will be placed in a folder named
 `lib/ros_local`.
+__Note: This environment generates rosserial messages, but does not build the workspaces.__
+__The workspaces will have to be built manually for any changes to message definitions to take effect.__
 
-`use_local_libs` same as `use_included_libs` but will use
-rosserial libraries located in `lib/ros_local` 
-(previously generated by `build_local_libs`), instead of `lib/ros_included`.
+#### use_local_libs
+Same as `use_included_libs` but will use
+rosserial libraries located in [lib/ros_local](lib/ros_local) 
+(previously generated by `build_local_libs`), instead of [lib/ros_included](lib/ros_included).
 
-`download_and_build_remote_libs` will download both rosserial
-and all messages from the `vehicle_msgs` repository, 
-build them and place the rosserial library in `lib/ros_remote`.
+#### download_and_build_remote_libs
+Download both rosserial and all messages from the `vehicle_msgs` repository, 
+build them and place the rosserial library in [lib/ros_remote](lib/ros_remote).
+Some temporary ROS workspaces will be placed in a _tmp_ folder in the root of the repository.
 
-`use_local_libs` same as `use_included_libs` but will use
-rosserial libraries located in `lib/ros_remote` 
-(previously generated by `download_and_build_remote_libs`), instead of `lib/ros_included`.
+#### use_remote_libs
+Same as `use_included_libs` but will use
+rosserial libraries located in [lib/ros_remote](lib/ros_remote) instead
+(previously generated by `download_and_build_remote_libs`), instead of [lib/ros_included](lib/ros_included).
 
 
 ## FAQ
@@ -101,7 +129,7 @@ Set project name: template
 Parse repository:
 	 git clone https://github.com/prothen/testbed_msgs.git
 Received additional libraries.
-ROS1 interface chosen. Configuring dependencies ... (tzz its 2020...)
+ROS1 interface chosen. Configuring dependencies ... (tzz its 2021...)
 BUILD rosserial arduino from upstream:
 remote: Enumerating objects: 467, done.
 remote: Counting objects: 100% (467/467), done.
