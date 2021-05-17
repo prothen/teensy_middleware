@@ -9,7 +9,7 @@
 namespace encoders{
 
 //! Sampling interval for the wheel encoders in micro seconds
-const unsigned long ENCODER_SAMPLE_INTERVAL = 25000;
+const unsigned long ENCODER_SAMPLE_INTERVAL = 100000;
 
 /*!  
  * @defgroup EncoderPins Pins used connected the wheel encoders.
@@ -84,8 +84,15 @@ bool processEncoderTicks(encoder_reading_t& reading){
     // Update the times for the last ticks
     reading.right_time_delta = ENC_TICK_TIME[buffer_ix][RIGHT_ENC_IX] - previous_right_tick_time;
     reading.left_time_delta = ENC_TICK_TIME[buffer_ix][LEFT_ENC_IX] - previous_left_tick_time;
+    if (reading.right_ticks == 0){
+      reading.right_time_delta = 0;
+      ENC_TICK_TIME[buffer_ix][RIGHT_ENC_IX] = current_time - ENCODER_SAMPLE_INTERVAL;
+    }
+    if (reading.left_ticks == 0){
+      reading.left_time_delta = 0;
+      ENC_TICK_TIME[buffer_ix][LEFT_ENC_IX] = current_time - ENCODER_SAMPLE_INTERVAL;
+    }
     last_sent_time = current_time;
-    //encoder_pub.publish(&MSG_ENCODER); // Publish tick count
     ENC_TICK_COUNT[buffer_ix][RIGHT_ENC_IX] = 0;
     ENC_TICK_COUNT[buffer_ix][LEFT_ENC_IX] = 0;
     encoders_processed = true;
