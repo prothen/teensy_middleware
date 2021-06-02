@@ -25,7 +25,6 @@
  */
 
 #include "Arduino.h"
-//#include "i2c_driver_wire.h"
 #include <i2c_driver.h>
 #include "imx_rt1060/imx_rt1060_i2c_driver.h"
 #include "Adafruit_MCP23008.h"
@@ -71,8 +70,6 @@ void Adafruit_MCP23008::begin(uint8_t addr) {
 void Adafruit_MCP23008::begin(void) { begin(0); }
 
 void Adafruit_MCP23008::pinMode(uint8_t p, uint8_t d) {
-  // uint8_t io_flags;
-
   // only 8 bits!
   if (p > 7)
     return;
@@ -91,13 +88,7 @@ void Adafruit_MCP23008::pinMode(uint8_t p, uint8_t d) {
 }
 
 uint8_t Adafruit_MCP23008::readGPIO(void) {
-  // read the current GPIO input
-  //if (!master.finished()) {
-  //  delayMicroseconds()
-  //}
   return gpio_state;
-  // master.read_async
-  // return read8(MCP23008_GPIO);
 }
 
 MCPState Adafruit_MCP23008::update(bool force){
@@ -105,43 +96,46 @@ MCPState Adafruit_MCP23008::update(bool force){
   unsigned long duration = millis() - gpio_stamp;
   switch (state)
   {
+  case DONE:
+    state = WAITING;
   case WAITING:
-    if ((duration > update_interval || force) && master.finished()){
-      state = READ_STATE_SEND_ADDR;
+    // Immediately start write-read if state has been updated
+    if (next_gpio_state != gpio_state) {
+      state = SENDING_STATE;
+    // just read the state if it's time or force flag is enabled
+    } else if (duration > update_interval || force) {
+      state = READ_STATE_SENDING_ADDR;
     } else {
       break;
     }
-  case READ_STATE_SEND_ADDR:
+  case SENDING_STATE:
     if (master.finished()) {
-      write_buffer[0] = MCP23008_GPIO;
-      master.write_async(i2caddr, write_buffer, 1, false);
-      state = READ_STATE_REQUEST_STATE;
-    } 
-    break;
-  case READ_STATE_REQUEST_STATE:
-    if (master.finished()) {
-      master.read_async(i2caddr, read_buffer, 1, true);
-      state = SEND_STATE;
-    }
-    break;
-  case SEND_STATE:
-    if (master.finished()) {
-      gpio_state = (read_buffer[0] & io_flags) | (next_gpio_state & !io_flags);
-      //gpio_state = read_buffer[0];
       write_buffer[0] = MCP23008_GPIO;
       write_buffer[1] = next_gpio_state;
       master.write_async(i2caddr, write_buffer, 2, true);
-      gpio_stamp = millis();
-      state = WAIT_FOR_SEND;
+      state = READ_STATE_SENDING_ADDR;
     }
     break;
-  case WAIT_FOR_SEND:
+  case READ_STATE_SENDING_ADDR:
     if (master.finished()) {
+      write_buffer[0] = MCP23008_GPIO;
+      master.write_async(i2caddr, write_buffer, 1, false);
+      state = READ_STATE_REQUESTING_STATE;
+    } 
+    break;
+  case READ_STATE_REQUESTING_STATE:
+    if (master.finished()) {
+      master.read_async(i2caddr, read_buffer, 1, true);
+      state = WAITING_FOR_READ;
+    }
+    break;
+  case WAITING_FOR_READ:
+    if (master.finished()) {
+      gpio_state = read_buffer[0];
+      gpio_stamp = millis();
       state = DONE;
     }
     break;
-  case DONE:
-    state = WAITING;
   }
   return state;
 }
@@ -154,7 +148,6 @@ void Adafruit_MCP23008::forceUpdate() {
 
 void Adafruit_MCP23008::writeGPIO(uint8_t gpio) { 
   next_gpio_state = gpio;
-  // write8(MCP23008_GPIO, gpio); 
 }
 
 void Adafruit_MCP23008::digitalWrite(uint8_t p, uint8_t d) {

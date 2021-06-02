@@ -269,8 +269,8 @@ bool callibrateSteering(){
     switch (state)
     {
     case NOT_CALIBRATING:
-      if (buttons::readEvent(calib_button) == buttons::LONG_PRESSED &&
-          !pwm_reader::REM_IDLE){
+      if (buttons::readEvent(calib_button) == buttons::LONG_PRESSED
+          && !pwm_reader::REM_IDLE){
         state = TURN_LEFT;
         int steer_ix = 0;
         max_pwm = DEFAULT_PWM_OUT_MAX_PW[steer_ix];
