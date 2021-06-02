@@ -34,7 +34,7 @@ def main():
         middleware = 'ros1' # sys.argv[2]
         print(f'Received project {project} and middleware {middleware}')
         # Start parsing the configuration
-        with open(f"{work_dir}/targets/{project}/config.yaml", 'r') as stream:
+        with open(f"{work_dir}/resources/config.yaml", 'r') as stream:
             try:
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as e:

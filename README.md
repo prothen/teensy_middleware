@@ -2,12 +2,21 @@
 This repository contains firmware for the SVEA Powerboard 2.
 PlatformIO is used to build and upload the firmware. 
 Instructions and scripts for installing PlatformIO 
-toether with other dependencies are included in this repository.
+together with other dependencies are included in this repository.
 See the [Setup](#setup) section for further instructions. 
 ## Repository structure
 - [Source code location](src/)
+
+	This folder contains the source code for the firmware
+
 - [Libraries](lib/)
+
+	Contains libraries
+
 - [Target definition](targets/)
+
+	Contains a 
+
 - [Build scripts and other utilities](resources/)
 - [PlatformIO configurations](/platformio.ini)
 - [Developer instructions](docs/DEVELOPMENT.md)
@@ -16,7 +25,7 @@ See the [Setup](#setup) section for further instructions.
 There are three options for how to install platformIO.
 The two first options will create a virtual environment for PlatformIO.
 The last option will install the PlatformIO library directly with
-your other python libraries. 
+your other python libraries.
 
 ### For development with Visual Code
 _Recommended for development_
@@ -35,7 +44,7 @@ _Recommended for just flashing new firmware_
 
 ### I'm in a hurry and I just need to flash this Powerboard NOW
 _Not recommended unless the previous methods has already failed_
-1. `git clone` this ropository to a folder on your computer.
+1. `git clone` this repository to a folder on your computer.
 2. Go to the root folder of this repository and run `bash init.sh`
 
 ## Usage
