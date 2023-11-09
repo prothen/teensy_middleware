@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include "Adafruit_MCP23008.h"
+#include <Adafruit_MCP23X08.h>
 //APA102 LEDs
 // see https://cpldcpu.wordpress.com/2014/08/27/apa102/
 namespace led{
@@ -18,7 +18,7 @@ const uint8_t on_frame[4] = {global_brightness, 255, 0, 50}; // Global, R, B, G
 const uint8_t off_frame[4] = {global_brightness, 0, 0, 0};
 const uint16_t num_leds = 4;
 uint8_t retbuff[4*num_leds]; // Dummy return buffer
-Adafruit_MCP23008* gpio_extender;
+Adafruit_MCP23X08 gpio_extender;
 SPISettings settingsLED(data_rate, MSBFIRST, SPI_MODE0);
 
 struct irgb_t {
@@ -66,9 +66,10 @@ irgb_t LED_COLOR_VALUES[num_leds];
 void set_led_channel(uint8_t channel){
     uint8_t state_1 = channel & 1;          // first bit
     uint8_t state_2 = (channel & 2) >> 1;   // second bit
-    gpio_extender->digitalWrite(LED_CH_1, state_1);
-    gpio_extender->digitalWrite(LED_CH_2, state_2);
-    gpio_extender->forceUpdate();
+    
+    gpio_extender.digitalWrite(LED_CH_1, state_1);
+    gpio_extender.digitalWrite(LED_CH_2, state_2);
+    //gpio_extender->forceUpdate();
     return;
 }
 
@@ -134,12 +135,12 @@ void updateLEDs(bool force = false){
     }
 }
 
-void setup(Adafruit_MCP23008 &_gpio_extender) {
+void setup(Adafruit_MCP23X08 &_gpio_extender) {
     SPI1.begin(); // The LEDs are connected to SPI1, on pin 26 and 27
-    gpio_extender = &_gpio_extender;
-    gpio_extender->begin();
-    gpio_extender->pinMode(LED_CH_1, OUTPUT);
-    gpio_extender->pinMode(LED_CH_2, OUTPUT);
+   //gpio_extender = &_gpio_extender;
+    gpio_extender.begin_I2C();
+    gpio_extender.pinMode(LED_CH_1, OUTPUT);
+    gpio_extender.pinMode(LED_CH_2, OUTPUT);
     set_led_channel(0);
     updateLEDs(true);
 }

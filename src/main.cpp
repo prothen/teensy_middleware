@@ -1,17 +1,18 @@
 #include <Arduino.h>
-
 #include <ros.h>
 #include <limits>
-#include <i2c_driver.h>
-#include <svea_msgs/lli_ctrl.h>
-#include <svea_msgs/lli_encoder.h>
-#include <svea_msgs/lli_emergency.h>
+//#include <i2c_driver.h>
+
+
+#include <lli_ctrl.h>
+#include <lli_encoder.h>
+#include <lli_emergency.h>
 #include "encoders.h"
 #include "settings.h"
-#include "svea_teensy.h"
+#include <svea_teensy.h>
 #include "pwm_reader.h"
 #include "utility.h"
-#include "Adafruit_MCP23008.h"
+#include <Adafruit_MCP23X08.h>
 #include "led_control.h"
 #include "buttons.h"
 /*! @file svea_arduino_src.ino*/ 
@@ -324,7 +325,7 @@ void rosSetup() {
 /* GPIO extender variables */
 constexpr uint8_t GPIO_ADDRESS = 0;
 constexpr uint8_t SERVO_PWR_ENABLE_PIN = 3;
-Adafruit_MCP23008 gpio_extender(Master1);
+Adafruit_MCP23X08 gpio_extender;
 
 //! Arduino setup function
 void setup() {
@@ -332,7 +333,7 @@ void setup() {
   /* ROS setup */
   rosSetup();
   pinMode(LED_BUILTIN, OUTPUT);
-  gpio_extender.begin(GPIO_ADDRESS);
+  gpio_extender.begin_I2C(GPIO_ADDRESS);
   gpio_extender.pinMode(SERVO_PWR_ENABLE_PIN, OUTPUT);
   buttons::setup(gpio_extender);
   led::setup(gpio_extender);
@@ -378,9 +379,7 @@ void loop() {
     EncoderReadingToMsg(reading, MSG_ENCODER);
     encoder_pub.publish(&MSG_ENCODER);
   }
-  if (gpio_extender.update() == DONE){
-    ;
-  }
+
   buttons::updateButtons();
   bool is_calibrating = callibrateSteering();
   // LED logic

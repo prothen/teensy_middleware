@@ -2,8 +2,8 @@
 #define SVEA_LLI
 #include <Arduino.h>
 #include "settings.h"
-#include <svea_msgs/lli_ctrl.h>
-#include <svea_msgs/lli_encoder.h>
+#include <lli_ctrl.h>
+#include <lli_encoder.h>
 
 /*! @file svea_teensy.h*/ 
 

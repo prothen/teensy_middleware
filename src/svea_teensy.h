@@ -3,9 +3,9 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <ros.h>
-#include <svea_msgs/lli_ctrl.h>
-#include <svea_msgs/lli_encoder.h>
-#include <svea_msgs/lli_emergency.h>
+#include <lli_ctrl.h>
+#include <lli_encoder.h>
+#include <lli_emergency.h>
 #include <std_msgs/UInt16.h>
 #include "settings.h"
 #include "actuation_constants.h"
