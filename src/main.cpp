@@ -323,7 +323,7 @@ void rosSetup() {
 }
 
 /* GPIO extender variables */
-constexpr uint8_t GPIO_ADDRESS = 0;
+constexpr int GPIO_ADDRESS = 0x20;
 constexpr uint8_t SERVO_PWR_ENABLE_PIN = 3;
 Adafruit_MCP23X08 gpio_extender;
 
@@ -333,7 +333,10 @@ void setup() {
   /* ROS setup */
   rosSetup();
   pinMode(LED_BUILTIN, OUTPUT);
-  gpio_extender.begin_I2C(GPIO_ADDRESS);
+
+  Wire1.begin(); 
+  boolean temp = gpio_extender.begin_I2C(GPIO_ADDRESS, &Wire1);
+  // Serial.println(temp);
   gpio_extender.pinMode(SERVO_PWR_ENABLE_PIN, OUTPUT);
   buttons::setup(gpio_extender);
   led::setup(gpio_extender);
@@ -349,7 +352,7 @@ void loop() {
   if (sw_status != ros::SPIN_OK || d_since_last_msg > SW_TIMEOUT) {
     SW_IDLE = true;
   }
-  checkEmergencyBrake();
+  checkEmergencyBrake(); 
   int8_t remote_actuations[5];
   if (pwm_reader::processPwm(remote_actuations)){
     if (!pwm_reader::REM_IDLE){
@@ -358,7 +361,7 @@ void loop() {
         actuate(remote_actuations);
       }
       if (d_since_last_msg > EMERGENCY_T_CLEAR_LIMIT
-          && pwm_reader::REM_OVERRIDE 
+          && pwm_reader::REM_OVERRIDE
           && SW_EMERGENCY) {
         SW_EMERGENCY = false;
       }
