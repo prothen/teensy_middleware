@@ -1,20 +1,23 @@
 #include <Arduino.h>
 #include <ros.h>
 #include <limits>
-//#include <i2c_driver.h>
-
-
-#include <lli_ctrl.h>
-#include <lli_encoder.h>
-#include <lli_emergency.h>
-#include "encoders.h"
-#include "settings.h"
-#include <svea_teensy.h>
-#include "pwm_reader.h"
-#include "utility.h"
 #include <Adafruit_MCP23X08.h>
-#include "led_control.h"
-#include "buttons.h"
+
+#include "svea_msgs/lli_ctrl.h"
+#include "svea_msgs/lli_encoder.h"
+#include "svea_msgs/lli_emergency.h"
+
+#include "control/encoders.h"
+#include "control/pwm_reader.h"
+#include "control/led_control.h"
+#include "control/buttons.h"
+
+#include "settings.h"
+#include "svea_teensy.h"
+
+#include "utility.h"
+
+
 /*! @file svea_arduino_src.ino*/ 
 
 /*
@@ -335,8 +338,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   Wire1.begin(); 
-  boolean temp = gpio_extender.begin_I2C(GPIO_ADDRESS, &Wire1);
-  // Serial.println(temp);
+  gpio_extender.begin_I2C(GPIO_ADDRESS, &Wire1);
   gpio_extender.pinMode(SERVO_PWR_ENABLE_PIN, OUTPUT);
   buttons::setup(gpio_extender);
   led::setup(gpio_extender);
