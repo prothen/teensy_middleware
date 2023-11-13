@@ -1,5 +1,1 @@
-empy
-pyyaml
-rospkg
-platformio
-catkin_tools
+platformio==6.1.11

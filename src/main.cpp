@@ -1,19 +1,23 @@
 #include <Arduino.h>
-
 #include <ros.h>
 #include <limits>
-#include <i2c_driver.h>
-#include <svea_msgs/lli_ctrl.h>
-#include <svea_msgs/lli_encoder.h>
-#include <svea_msgs/lli_emergency.h>
-#include "encoders.h"
+#include <Adafruit_MCP23X08.h>
+
+#include "svea_msgs/lli_ctrl.h"
+#include "svea_msgs/lli_encoder.h"
+#include "svea_msgs/lli_emergency.h"
+
+#include "control/encoders.h"
+#include "control/pwm_reader.h"
+#include "control/led_control.h"
+#include "control/buttons.h"
+
 #include "settings.h"
 #include "svea_teensy.h"
-#include "pwm_reader.h"
+
 #include "utility.h"
-#include "Adafruit_MCP23008.h"
-#include "led_control.h"
-#include "buttons.h"
+
+
 /*! @file svea_arduino_src.ino*/ 
 
 /*
@@ -322,9 +326,9 @@ void rosSetup() {
 }
 
 /* GPIO extender variables */
-constexpr uint8_t GPIO_ADDRESS = 0;
+constexpr int GPIO_ADDRESS = 0x20;
 constexpr uint8_t SERVO_PWR_ENABLE_PIN = 3;
-Adafruit_MCP23008 gpio_extender(Master1);
+Adafruit_MCP23X08 gpio_extender;
 
 //! Arduino setup function
 void setup() {
@@ -332,7 +336,9 @@ void setup() {
   /* ROS setup */
   rosSetup();
   pinMode(LED_BUILTIN, OUTPUT);
-  gpio_extender.begin(GPIO_ADDRESS);
+
+  Wire1.begin(); 
+  gpio_extender.begin_I2C(GPIO_ADDRESS, &Wire1);
   gpio_extender.pinMode(SERVO_PWR_ENABLE_PIN, OUTPUT);
   buttons::setup(gpio_extender);
   led::setup(gpio_extender);
@@ -348,7 +354,7 @@ void loop() {
   if (sw_status != ros::SPIN_OK || d_since_last_msg > SW_TIMEOUT) {
     SW_IDLE = true;
   }
-  checkEmergencyBrake();
+  checkEmergencyBrake(); 
   int8_t remote_actuations[5];
   if (pwm_reader::processPwm(remote_actuations)){
     if (!pwm_reader::REM_IDLE){
@@ -357,7 +363,7 @@ void loop() {
         actuate(remote_actuations);
       }
       if (d_since_last_msg > EMERGENCY_T_CLEAR_LIMIT
-          && pwm_reader::REM_OVERRIDE 
+          && pwm_reader::REM_OVERRIDE
           && SW_EMERGENCY) {
         SW_EMERGENCY = false;
       }
@@ -378,9 +384,7 @@ void loop() {
     EncoderReadingToMsg(reading, MSG_ENCODER);
     encoder_pub.publish(&MSG_ENCODER);
   }
-  if (gpio_extender.update() == DONE){
-    ;
-  }
+
   buttons::updateButtons();
   bool is_calibrating = callibrateSteering();
   // LED logic

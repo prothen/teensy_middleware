@@ -12,3 +12,5 @@ log/*
 lib/ros_local/*
 lib/ros_remote/*
 tmp/*
+
+venv/
