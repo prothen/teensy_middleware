@@ -63,9 +63,15 @@ _Recommended for just flashing new firmware_
 4. Go to the root folder of this repository and run `bash init.sh`
 
 ### I'm in a hurry and I just need to flash this Powerboard NOW
-_Not recommended unless the previous methods has already failed_
-1. `git clone` this repository to a folder on your computer.
-2. Go to the root folder of this repository and run `bash init.sh`
+
+```
+git clone https://github.com/kth-sml/svea_lli_firmware
+cd svea_lli_firmware
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+pio run -t upload
+```
 
 ## Usage
 ### Compile and upload firmware
