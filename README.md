@@ -70,6 +70,7 @@ cd svea_lli_firmware
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
+./init.sh
 pio run -t upload
 ```
 
