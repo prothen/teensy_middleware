@@ -19,6 +19,14 @@
 
 #include "utility.h"
 
+#include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+// Math functions used to interpret IMU values
+#include "matrix.h"
+#include "quaternion.h"
+#include "vector.h"
+
 /*! @file svea_arduino_src.ino*/
 
 /*
@@ -37,32 +45,14 @@
  * @param channel The channel (pin) of the pwm board to send to.
  * @param in_value Value, between -127 and 127. to send.
  */
-bool pwmTimeout = false;
-uint16_t previousOff_tick = 0;
-uint16_t pwmUpdateTimeout = 10 * 1000; // (ms)
-unsigned long lastPWMUpdate = millis();
 inline void setPwmDriver(uint8_t channel, int8_t actuation_value) {
     if (abs_difference(actuation_value, ACTUATION_NEUTRAL) < DEAD_ZONE) {
         actuation_value = ACTUATION_NEUTRAL;
     }
     uint16_t off_tick = PWM_OUT_NEUTRAL_TICK[channel] + OUTPUT_SCALE[channel] * actuation_value;
-    previousOff_tick = off_tick;
+
     ACTUATED_TICKS[channel] = off_tick;
     analogWrite(PWM_OUT_PINS[channel], off_tick);
-
-    if (channel == PWM_OUT_STEER_PIN) {
-        if (off_tick != previousOff_tick) {
-            lastPWMUpdate = millis();
-            previousOff_tick = off_tick;
-            pwmTimeout = false;
-        } else {
-            if (millis() - lastPWMUpdate > pwmUpdateTimeout && !pwmTimeout) {
-                pwmTimeout = true;
-            } else {
-                pwmTimeout = false;
-            }
-        }
-    }
 }
 
 /*! @brief Send settings to the pwm board through setPwmDriver()
@@ -245,6 +235,43 @@ void EncoderReadingToMsg(const encoders::encoder_reading_t &reading, lli_encoder
     msg.left_time_delta = reading.left_time_delta;
 }
 
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+Adafruit_BNO055 bno = Adafruit_BNO055(55); //, BNO055_ADDRESS, &Wire1);
+
+bool setupIMU() {
+    if (!bno.begin()) {
+        /* There was a problem detecting the BNO055 ... check your connections */
+        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+        return false;
+    }
+    bno.setExtCrystalUse(false);
+}
+
+void IMUReadingToMsg(lli_imu_t &msg) {
+    msg.header.stamp = nh.now();
+    msg.orientation.x = bno.getQuat().x();
+    msg.orientation.y = bno.getQuat().y();
+    msg.orientation.z = bno.getQuat().z();
+    msg.orientation.w = bno.getQuat().w();
+
+    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    msg.angular_velocity.x = gyro.x();
+    msg.angular_velocity.y = gyro.y();
+    msg.angular_velocity.z = gyro.z();
+
+    imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    msg.linear_acceleration.x = accel.x();
+    msg.linear_acceleration.y = accel.y();
+    msg.linear_acceleration.z = accel.z();
+
+    float fakeCovariance = 0;
+    for (int i = 0; i < 9; ++i) {
+        msg.orientation_covariance[i] = fakeCovariance;
+        msg.angular_velocity_covariance[i] = fakeCovariance;
+        msg.linear_acceleration_covariance[i] = fakeCovariance;
+    }
+}
+
 /*!
  * @brief Steering callibration functionality. Should be called in every loop update.
  *
@@ -332,10 +359,15 @@ void rosSetup() {
     nh.advertise(ctrl_actuated_pub);
     nh.advertise(encoder_pub);
     nh.advertise(debug_pub);
+
+    nh.advertise(imu_pub);
+    nh.advertise(imu_mag);
+    nh.advertise(imu_temp);
 }
 
 //! Arduino setup function
 void setup() {
+    Serial.begin(SERIAL_BAUD_RATE);
     setupActuation();
     /* ROS setup */
     rosSetup();
@@ -345,6 +377,7 @@ void setup() {
     setup_gpio();
     pwm_reader::setup();
     encoders::setup();
+    setupIMU();
 }
 
 // Servo turned off by default
@@ -376,7 +409,7 @@ void loop() {
     // If the remote control is idle, the system is idle, there is no emergency, and the servo is not idle, turn off the servo
 
     // NEW, if pwnTimeout is true, turn off the servo, check setPWMdriver function for more info
-    if (((pwm_reader::REM_IDLE && SW_IDLE && !SW_EMERGENCY) || pwmTimeout) && !servo_idle) {
+    if ((pwm_reader::REM_IDLE && SW_IDLE && !SW_EMERGENCY) && !servo_idle) {
         actuate(IDLE_ACTUATION);
         gpio_extender.digitalWrite(SERVO_PWR_ENABLE_PIN, LOW);
         servo_idle = true;
@@ -391,6 +424,9 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
+
+    IMUReadingToMsg(MSG_IMU);
+    imu_pub.publish(&MSG_IMU);
 
     // PCB LED Logic
     buttons::updateButtons();
