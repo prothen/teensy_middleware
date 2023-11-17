@@ -336,11 +336,12 @@ void setup() {
     pwm_reader::setup();
     encoders::setup();
     setupIMU();
+    Serial.println("Setup done");
 }
 
 // Servo turned off by default
 static bool servo_idle = false;
-
+int l = 0;
 //! Main loop
 void loop() {
 
@@ -382,10 +383,12 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
-
-    IMUReadingToMsg(nh.now(), MSG_IMU);
+    // nh.now(), 
+    IMUReadingToMsg(MSG_IMU);
+    Serial.println("Trying to publish IMU");
     imu_pub.publish(&MSG_IMU);
-
+    IMU_DEBUG();
+    
     // PCB LED Logic
     buttons::updateButtons();
     if (!callibrateSteering()) {

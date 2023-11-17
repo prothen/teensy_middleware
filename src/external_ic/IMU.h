@@ -18,7 +18,7 @@
 
 
 #define BNO055_SAMPLERATE_DELAY_MS (100)
-Adafruit_BNO055 bno = Adafruit_BNO055(55); //, BNO055_ADDRESS, &Wire1);
+Adafruit_BNO055 bno = Adafruit_BNO055(0xA0); 
 
 bool setupIMU() {
     if (!bno.begin()) {
@@ -26,20 +26,32 @@ bool setupIMU() {
         Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         return false;
     }
-    bno.setExtCrystalUse(false);
+    Serial.println("BN0055 detected");
+
+    //bno.setExtCrystalUse(false);
+
 }
 int headerCnt = 0;
-void IMUReadingToMsg(ros::Time now, sensor_msgs::Imu &msg) {
+//ros::Time now, 
+void IMUReadingToMsg(sensor_msgs::Imu &msg) {
+    Serial.println("IMUReadingToMsg");
+    //msg.header.frame_id = "imu";
+    //msg.header.stamp = now; //TODO
+    //msg.header.seq = headerCnt++;
     
-    msg.header.frame_id = "imu";
-    msg.header.stamp = now; //TODO
-    msg.header.seq = headerCnt++;
-    msg.orientation.x = bno.getQuat().x();
-    msg.orientation.y = bno.getQuat().y();
-    msg.orientation.z = bno.getQuat().z();
-    msg.orientation.w = bno.getQuat().w();
-
+    auto qx = bno.getQuat().x();
+    auto qy = bno.getQuat().y();
+    auto qz = bno.getQuat().z();
+    auto qw = bno.getQuat().w();
+    Serial.println(String(qx) + " " + String(qy) + " " + String(qz) + " " + String(qw));
+    msg.orientation.x = qx;
+    msg.orientation.y = qy;
+    msg.orientation.z = qz;
+    msg.orientation.w = qw;
+    Serial.println("IMUReadingToMsg2");
     imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    Serial.println("IMUReadingToMsg3");
+    Serial.println(String(gyro.x()) + " " + String(gyro.y()) + " " + String(gyro.z()));
     msg.angular_velocity.x = gyro.x();
     msg.angular_velocity.y = gyro.y();
     msg.angular_velocity.z = gyro.z();
@@ -55,4 +67,8 @@ void IMUReadingToMsg(ros::Time now, sensor_msgs::Imu &msg) {
         msg.angular_velocity_covariance[i] = fakeCovariance;
         msg.linear_acceleration_covariance[i] = fakeCovariance;
     }
+}
+
+void IMU_DEBUG(){
+    Serial.println(String(bno.getQuat().x()));
 }
