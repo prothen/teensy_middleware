@@ -1,7 +1,9 @@
 #include <Arduino.h>
 // Deps needed to interface with the IMU
 #include "sensor_msgs/Imu.h"
-#include "svea_teensy.h"
+#include "sensor_msgs/MagneticField.h"
+#include "sensor_msgs/Temperature.h"
+
 #include <Adafruit_BNO055.h>
 #include <Adafruit_Sensor.h>
 #include <SPI.h>
@@ -28,7 +30,7 @@ bool setupIMU() {
 uint32_t headerCntIMU = 0;
 uint32_t headerCntMag = 0;
 uint32_t headerCntTemp = 0;
-void IMUReadingToMsg(ros::Time time, lli_imu_t &msg) {
+void IMUReadingToMsg(ros::Time time, sensor_msgs::Imu &msg) {
     sensors_event_t event;
     bno.getEvent(&event);
     msg.header.seq = headerCntIMU++;
@@ -55,25 +57,29 @@ void IMUReadingToMsg(ros::Time time, lli_imu_t &msg) {
     }
     Serial.printf("IMU: Orientation(%f, %f, %f, %f) Angular Velocity(%f, %f, %f) Linear Acceleration(%f, %f, %f)\n", msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z);
 }
-void MagReadingToMsg(ros::Time time, lli_mag_t &msg) {
+void MagReadingToMsg(ros::Time time, sensor_msgs::MagneticField &msg) {
     sensors_event_t event;
     bno.getEvent(&event);
-    msg.header.seq = headerCntMag++;
-    msg.header.stamp = time;
-    msg.header.frame_id = "imu";
-    msg.magnetic_field.x = (float)event.magnetic.x;
-    msg.magnetic_field.y = (float)event.magnetic.y;
-    msg.magnetic_field.z = (float)event.magnetic.z;
-    float fakeCovariance = 0;
-    for (int i = 0; i < 9; ++i) {
-        msg.magnetic_field_covariance[i] = fakeCovariance;
-    }
+    //msg.header.seq = headerCntMag++;
+    //msg.header.stamp = time;
+    //msg.header.frame_id = "imu";
+    //imu::Vector<3> magVec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER); 
+    //msg.magnetic_field.x = (float)magVec.x();
+    //msg.magnetic_field.y = (float)magVec.y();
+    //msg.magnetic_field.z = (float)magVec.z();
+    msg.magnetic_field.x = 6;
+    //float fakeCovariance = 0;
+    //for (int i = 0; i < 9; ++i) {
+    //    msg.magnetic_field_covariance[i] = fakeCovariance;
+    //}
+    Serial.printf("Magnetic Field: (%f, %f, %f)\n", msg.magnetic_field.x, msg.magnetic_field.y, msg.magnetic_field.z);
 }
 void TempReadingToMsg(ros::Time time, sensor_msgs::Temperature &msg) {
     msg.header.seq = headerCntTemp++;
     msg.header.stamp = time;
     msg.header.frame_id = "t";
     msg.temperature = (float)bno.getTemp();
+    Serial.printf("Temperature: %f\n", msg.temperature);
 }
 void IMU_DEBUG() {
     /* Get a new sensor event */
