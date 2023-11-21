@@ -227,9 +227,6 @@ void EncoderReadingToMsg(const encoders::encoder_reading_t &reading, lli_encoder
     msg.left_time_delta = reading.left_time_delta;
 }
 
-
-
-
 /*!
  * @brief Steering callibration functionality. Should be called in every loop update.
  *
@@ -344,7 +341,7 @@ static bool servo_idle = false;
 int l = 0;
 //! Main loop
 void loop() {
-
+    Serial.println("Enerting Loop");
     int sw_status = nh.spinOnce();
     unsigned long d_since_last_msg = millis() - SW_T_RECIEVED;
     checkEmergencyBrake();
@@ -364,7 +361,7 @@ void loop() {
     if (sw_status != ros::SPIN_OK || d_since_last_msg > SW_TIMEOUT) {
         SW_IDLE = true;
     }
-
+     Serial.println("1");
     // If the remote control is idle, the system is idle, there is no emergency, and the servo is not idle, turn off the servo
 
     // NEW, if pwnTimeout is true, turn off the servo, check setPWMdriver function for more info
@@ -378,17 +375,19 @@ void loop() {
             servo_idle = false;
         }
     }
+    Serial.println("2");
     encoders::encoder_reading_t reading;
     if (encoders::processEncoderTicks(reading)) {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
-    // nh.now(), 
+    nh.now(),
     IMUReadingToMsg(MSG_IMU);
+    
     Serial.println("Trying to publish IMU");
     imu_pub.publish(&MSG_IMU);
-    IMU_DEBUG();
-    
+    //IMU_DEBUG();
+
     // PCB LED Logic
     buttons::updateButtons();
     if (!callibrateSteering()) {
