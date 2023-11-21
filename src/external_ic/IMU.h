@@ -30,22 +30,25 @@ bool setupIMU() {
 int headerCnt = 0;
 // ros::Time now,
 void IMUReadingToMsg(sensor_msgs::Imu &msg) {
-    sensors_event_t event;
-    bno.getEvent(&event);
+    
+    imu::Quaternion quat = bno.getQuat();
+    msg.orientation.x = (float)quat.x();
+    msg.orientation.y = (float)quat.y();
+    msg.orientation.z = (float)quat.z();
+    msg.orientation.w = (float)quat.w();
 
-    Serial.print(F("Orientation: "));
-    Serial.print((float)event.orientation.x);
-    msg.orientation.x = (float)event.orientation.x;
-    Serial.print(F(" "));
-    Serial.print((float)event.orientation.y);
-    msg.orientation.y = (float)event.orientation.y;
-    Serial.print(F(" "));
-    Serial.print((float)event.orientation.z);
-    Serial.println(F(""));
+    imu::Vector<3> gyroVec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    msg.angular_velocity.x = (float)gyroVec.x();
+    msg.angular_velocity.y = (float)gyroVec.y();
+    msg.angular_velocity.z = (float)gyroVec.z();
+
+    imu::Vector<3> accelVec = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+    msg.linear_acceleration.x = (float)accelVec.x();
+    msg.linear_acceleration.y = (float)accelVec.y();
+    msg.linear_acceleration.z = (float)accelVec.z();
 
     float fakeCovariance = 0;
     for (int i = 0; i < 9; ++i) {
-        msg.orientation_covariance[i] = fakeCovariance;
         msg.angular_velocity_covariance[i] = fakeCovariance;
         msg.linear_acceleration_covariance[i] = fakeCovariance;
     }
