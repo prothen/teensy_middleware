@@ -6,12 +6,17 @@
 #include <Wire.h>
 #include <utility/imumaths.h>
 
+#include "ros/duration.h"
 #include <ros.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Header.h>
 #include <std_msgs/String.h>
 
 #include "sensor_msgs/Imu.h"
+
+#include "svea_teensy.h"
+
+std_msgs::Header header;
 
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire1);
@@ -24,33 +29,81 @@ bool setupIMU() {
     }
     bno.setExtCrystalUse(true);
     Serial.println("BN0055 detected");
+
+    header.frame_id = "imu";
+    header.seq = 0;
+
     return true;
 }
 
-int headerCnt = 0;
 // ros::Time now,
-void IMUReadingToMsg(sensor_msgs::Imu &msg) {
-    
+void IMUReadingToMsg() {
+
+    // Header stuff
+    header.stamp = nh.now();
+    header.seq++;
+
+    MSG_IMU.header = header;    
+    MSG_MAG.header = header;
+    MSG_TEMP.header = header;
+
     imu::Quaternion quat = bno.getQuat();
-    msg.orientation.x = (float)quat.x();
-    msg.orientation.y = (float)quat.y();
-    msg.orientation.z = (float)quat.z();
-    msg.orientation.w = (float)quat.w();
+    MSG_IMU.orientation.x = (float)quat.x();
+    MSG_IMU.orientation.y = (float)quat.y();
+    MSG_IMU.orientation.z = (float)quat.z();
+    MSG_IMU.orientation.w = (float)quat.w();
 
     imu::Vector<3> gyroVec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-    msg.angular_velocity.x = (float)gyroVec.x();
-    msg.angular_velocity.y = (float)gyroVec.y();
-    msg.angular_velocity.z = (float)gyroVec.z();
+    MSG_IMU.angular_velocity.x = (float)gyroVec.x();
+    MSG_IMU.angular_velocity.y = (float)gyroVec.y();
+    MSG_IMU.angular_velocity.z = (float)gyroVec.z();
 
     imu::Vector<3> accelVec = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
-    msg.linear_acceleration.x = (float)accelVec.x();
-    msg.linear_acceleration.y = (float)accelVec.y();
-    msg.linear_acceleration.z = (float)accelVec.z();
+    MSG_IMU.linear_acceleration.x = (float)accelVec.x();
+    MSG_IMU.linear_acceleration.y = (float)accelVec.y();
+    MSG_IMU.linear_acceleration.z = (float)accelVec.z();
 
+    imu::Vector<3> magVec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    MSG_MAG.magnetic_field.x = (float)magVec.x();
+    MSG_MAG.magnetic_field.y = (float)magVec.y();
+    MSG_MAG.magnetic_field.z = (float)magVec.z();
+
+    MSG_TEMP.temperature = (float)bno.getTemp();
+
+    Serial.print("IMU: (");
+    Serial.print(MSG_IMU.orientation.x);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.orientation.y);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.orientation.z);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.orientation.w);
+    Serial.print(")  Angular Velocity: (");
+    Serial.print(MSG_IMU.angular_velocity.x);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.angular_velocity.y);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.angular_velocity.z);
+    Serial.print(")  Linear Acceleration: (");
+    Serial.print(MSG_IMU.linear_acceleration.x);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.linear_acceleration.y);
+    Serial.print(", ");
+    Serial.print(MSG_IMU.linear_acceleration.z);
+    Serial.print(")  Magnetic Field: (");
+    Serial.print(MSG_MAG.magnetic_field.x);
+    Serial.print(", ");
+    Serial.print(MSG_MAG.magnetic_field.y);
+    Serial.print(", ");
+    Serial.print(MSG_MAG.magnetic_field.z);
+    Serial.print(")  Temperature: ");
+    Serial.println(MSG_TEMP.temperature);
+    
     float fakeCovariance = 0;
     for (int i = 0; i < 9; ++i) {
-        msg.angular_velocity_covariance[i] = fakeCovariance;
-        msg.linear_acceleration_covariance[i] = fakeCovariance;
+        MSG_IMU.angular_velocity_covariance[i] = fakeCovariance;
+        MSG_IMU.linear_acceleration_covariance[i] = fakeCovariance;
+        MSG_MAG.magnetic_field_covariance[i] = fakeCovariance;
     }
 }
 

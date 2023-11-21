@@ -381,11 +381,16 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
-    nh.now(),
-    IMUReadingToMsg(MSG_IMU);
     
+    IMUReadingToMsg();
     
+    Serial.println("MSG_IMU: ");
     imu_pub.publish(&MSG_IMU);
+    Serial.println("MSG_MAG: ");
+    //imu_mag.publish(&MSG_MAG);
+    Serial.println("MSG_TEMP: ");
+   // imu_temp.publish(&MSG_TEMP);
+    Serial.println("WHOOPSIE");
     //IMU_DEBUG();
 
     // PCB LED Logic
