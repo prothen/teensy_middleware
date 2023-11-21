@@ -341,7 +341,7 @@ static bool servo_idle = false;
 int l = 0;
 //! Main loop
 void loop() {
-    
+
     int sw_status = nh.spinOnce();
     unsigned long d_since_last_msg = millis() - SW_T_RECIEVED;
     checkEmergencyBrake();
@@ -381,17 +381,14 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
-    
-    IMUReadingToMsg();
-    
-    Serial.println("MSG_IMU: ");
+
+    IMUReadingToMsg(nh.now(), MSG_IMU);
+    MagReadingToMsg(nh.now(), MSG_MAG);
+    TempReadingToMsg(nh.now(), MSG_TEMP);
+
     imu_pub.publish(&MSG_IMU);
-    Serial.println("MSG_MAG: ");
-    //imu_mag.publish(&MSG_MAG);
-    Serial.println("MSG_TEMP: ");
-   // imu_temp.publish(&MSG_TEMP);
-    Serial.println("WHOOPSIE");
-    //IMU_DEBUG();
+    imu_mag.publish(&MSG_MAG);
+    imu_temp.publish(&MSG_TEMP);
 
     // PCB LED Logic
     buttons::updateButtons();
