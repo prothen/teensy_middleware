@@ -14,7 +14,6 @@
 #include "external_ic/IMU.h"
 #include "external_ic/gpio_ext.h"
 
-
 #include "settings.h"
 #include "svea_teensy.h"
 
@@ -310,39 +309,48 @@ void rosSetup() {
     // NOTE: Putting advertise before subscribe destroys
     //       EVERYTHING :DDDD~~~~~
 
-    
     nh.subscribe(ctrl_request);
-    nh.subscribe(emergency_request);
-   
-    nh.advertise(remote_pub);
-    
-    nh.advertise(imu_mag);
-    nh.advertise(imu_pub);
+    nh.negotiateTopics();
 
-    nh.advertise(imu_temp);
+    nh.subscribe(emergency_request);
+    nh.negotiateTopics();
+
+    nh.advertise(remote_pub);
+    nh.negotiateTopics();
 
     nh.advertise(ctrl_actuated_pub);
-    nh.advertise(encoder_pub);
+    nh.negotiateTopics();
 
-  
+    nh.advertise(encoder_pub);
+    nh.negotiateTopics();
 
     nh.advertise(debug_pub);
     nh.negotiateTopics();
+
+    nh.advertise(imu_mag);
+    nh.negotiateTopics();
+
+    nh.advertise(imu_pub);
+    nh.negotiateTopics();
+
+    nh.advertise(imu_temp);
+    nh.negotiateTopics();
 }
 
+// Im sorry kaj, it will do for now
+bool imuConnected = false;
 //! Arduino setup function
 void setup() {
-    // Serial.begin(SERIAL_BAUD_RATE);
+    while(nh.connected()){
+        nh.spinOnce();
+    }
     setupActuation();
-    /* ROS setup */
-    
     pinMode(LED_BUILTIN, OUTPUT);
-
     Wire1.begin();
     setup_gpio();
     pwm_reader::setup();
     encoders::setup();
-    setupIMU();
+    imuConnected = setupIMU();
 
     rosSetup();
     Serial.println("Setup done");
@@ -374,9 +382,6 @@ void loop() {
         SW_IDLE = true;
     }
 
-    // If the remote control is idle, the system is idle, there is no emergency, and the servo is not idle, turn off the servo
-
-    // NEW, if pwnTimeout is true, turn off the servo, check setPWMdriver function for more info
     if ((pwm_reader::REM_IDLE && SW_IDLE && !SW_EMERGENCY) && !servo_idle) {
         actuate(IDLE_ACTUATION);
         gpio_extender.digitalWrite(SERVO_PWR_ENABLE_PIN, LOW);
@@ -392,9 +397,11 @@ void loop() {
     if (encoders::processEncoderTicks(reading)) {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
+        nh.spinOnce();
     }
-
-    IMUReadingToMsg();
+    if (imuConnected) {
+        IMUReadingToMsg();
+    }
 
     // PCB LED Logic
     buttons::updateButtons();
