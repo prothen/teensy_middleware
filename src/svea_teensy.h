@@ -14,7 +14,6 @@
 #include "sensor_msgs/MagneticField.h"
 #include "sensor_msgs/Temperature.h"
 
-
 #include "settings.h"
 
 /*! @file svea_teensy.h*/
@@ -129,10 +128,6 @@ typedef svea_msgs::lli_ctrl lli_ctrl_in_t;    //!< Message type for incomming me
 typedef svea_msgs::lli_ctrl lli_ctrl_out_t;   //!< Message type for outgoing messages'
 typedef svea_msgs::lli_encoder lli_encoder_t; //!< Message type for encoder messages
 
-typedef sensor_msgs::Imu lli_imu_t; //!< Message type for imu messages
-typedef sensor_msgs::MagneticField lli_mag_t;
-typedef sensor_msgs::Temperature lli_t_t;
-
 /*
  * Storage variables
  */
@@ -188,23 +183,22 @@ lli_ctrl_out_t MSG_ACTUATED; //!< Message sending actuated messages
 lli_encoder_t MSG_ENCODER;   //!< Message used for outgoing wheel encoder messages
 lli_encoder_t MSG_DEBUG;
 
-//BN055 Stuff
-lli_imu_t MSG_IMU;
-lli_mag_t MSG_MAG;
-lli_t_t MSG_TEMP;
-
+// BN055 Stuff
+sensor_msgs::Imu MSG_IMU;
+sensor_msgs::MagneticField MSG_MAG;
+sensor_msgs::Temperature MSG_TEMP;
 
 //!< Message used for misc debugging
 ros::Publisher remote_pub("lli/remote", &MSG_REMOTE);                 //!< Remote message publisher
 ros::Publisher ctrl_actuated_pub("lli/ctrl_actuated", &MSG_ACTUATED); //!< Actuated control message publisher
 ros::Publisher encoder_pub("lli/encoder", &MSG_ENCODER);
-ros::Publisher debug_pub("lli/debug", &MSG_DEBUG); 
+ros::Publisher debug_pub("lli/debug", &MSG_DEBUG);
 
-ros::Publisher imu_pub("/imu/data", &MSG_IMU); 
-ros::Publisher imu_mag("/imu/mag", &MSG_MAG); 
-ros::Publisher imu_temp("/imu/temp", &MSG_TEMP); 
+ros::Publisher imu_pub("/imu/data", &MSG_IMU);
+ros::Publisher imu_mag("/imu/mag", &MSG_MAG);
+ros::Publisher imu_temp("/imu/temp", &MSG_TEMP);
 
-                                               //!< Encoder reading publisher
+//!< Encoder reading publisher
 ros::Subscriber<lli_ctrl_in_t> ctrl_request("lli/ctrl_request", &callbackCtrlRequest);            //!< Controll request subscriber
 ros::Subscriber<svea_msgs::lli_emergency> emergency_request("lli/emergency", &callbackEmergency); //!< Controll request subscriber
 

@@ -308,24 +308,33 @@ void rosSetup() {
     nh.initNode();
     // NOTE: Putting advertise before subscribe destroys
     //       EVERYTHING :DDDD~~~~~
+
+    
     nh.subscribe(ctrl_request);
     nh.subscribe(emergency_request);
+   
     nh.advertise(remote_pub);
+    
+    nh.advertise(imu_mag);
+    nh.advertise(imu_pub);
+
+    nh.advertise(imu_temp);
+
     nh.advertise(ctrl_actuated_pub);
     nh.advertise(encoder_pub);
-    nh.advertise(debug_pub);
 
-    nh.advertise(imu_pub);
-    nh.advertise(imu_mag);
-    nh.advertise(imu_temp);
+    
+
+    nh.advertise(debug_pub);
+    nh.negotiateTopics();
 }
 
 //! Arduino setup function
 void setup() {
-    Serial.begin(SERIAL_BAUD_RATE);
+    // Serial.begin(SERIAL_BAUD_RATE);
     setupActuation();
     /* ROS setup */
-    rosSetup();
+    
     pinMode(LED_BUILTIN, OUTPUT);
 
     Wire1.begin();
@@ -333,6 +342,8 @@ void setup() {
     pwm_reader::setup();
     encoders::setup();
     setupIMU();
+
+    rosSetup();
     Serial.println("Setup done");
 }
 
@@ -341,7 +352,7 @@ static bool servo_idle = false;
 int l = 0;
 //! Main loop
 void loop() {
-    
+
     int sw_status = nh.spinOnce();
     unsigned long d_since_last_msg = millis() - SW_T_RECIEVED;
     checkEmergencyBrake();
@@ -381,17 +392,17 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
     }
-    
+
     IMUReadingToMsg();
-    
-    Serial.println("MSG_IMU: ");
-    imu_pub.publish(&MSG_IMU);
-    Serial.println("MSG_MAG: ");
-    //imu_mag.publish(&MSG_MAG);
-    Serial.println("MSG_TEMP: ");
-   // imu_temp.publish(&MSG_TEMP);
-    Serial.println("WHOOPSIE");
-    //IMU_DEBUG();
+
+    // Serial.println("MSG_IMU: ");
+    // imu_pub.publish(&MSG_IMU);
+    // Serial.println("MSG_MAG: ");
+    // imu_mag.publish(&MSG_MAG);
+    // Serial.println("MSG_TEMP: ");
+    // imu_temp.publish(&MSG_TEMP);
+    // Serial.println("WHOOPSIE");
+    //  IMU_DEBUG();
 
     // PCB LED Logic
     buttons::updateButtons();

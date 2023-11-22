@@ -12,6 +12,7 @@
 const uint32_t SERIAL_BAUD_RATE = 115200;
 #else
 const uint32_t SERIAL_BAUD_RATE = 250000;
+//const uint32_t SERIAL_BAUD_RATE = 115200;
 #endif
 
 /*
@@ -20,11 +21,13 @@ const uint32_t SERIAL_BAUD_RATE = 250000;
 const unsigned long SW_TIMEOUT = 200; //!< Duration (ms) from last recieved computer
                                       //!< message when the computer will count as idle
 
+// THIS IS VERY STUPID AND SHOULD BE REMOVED, but cant be removed
+// Because ROS
 //! Maximum number of ROS subscribers
-const uint8_t MAX_ROS_SUBSCRIBERS = 2;
+const uint8_t MAX_ROS_SUBSCRIBERS = 50;
 //! Maximum number of ROS publishers
-const uint8_t MAX_ROS_PUBLISHERS = 5;
+const uint8_t MAX_ROS_PUBLISHERS = 50;
 //! Maximum number of ROS subscribers
-const uint16_t ROS_IN_BUFFER_SIZE = 300;
-const uint16_t ROS_OUT_BUFFER_SIZE = 300;
+const uint16_t ROS_IN_BUFFER_SIZE = 500;
+const uint16_t ROS_OUT_BUFFER_SIZE = 500;
 #endif /* SVEA_LLI_SETTINGS */
