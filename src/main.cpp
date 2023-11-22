@@ -14,6 +14,7 @@
 #include "external_ic/IMU.h"
 #include "external_ic/gpio_ext.h"
 
+
 #include "settings.h"
 #include "svea_teensy.h"
 
@@ -323,7 +324,7 @@ void rosSetup() {
     nh.advertise(ctrl_actuated_pub);
     nh.advertise(encoder_pub);
 
-    
+  
 
     nh.advertise(debug_pub);
     nh.negotiateTopics();
@@ -394,15 +395,6 @@ void loop() {
     }
 
     IMUReadingToMsg();
-
-    // Serial.println("MSG_IMU: ");
-    // imu_pub.publish(&MSG_IMU);
-    // Serial.println("MSG_MAG: ");
-    // imu_mag.publish(&MSG_MAG);
-    // Serial.println("MSG_TEMP: ");
-    // imu_temp.publish(&MSG_TEMP);
-    // Serial.println("WHOOPSIE");
-    //  IMU_DEBUG();
 
     // PCB LED Logic
     buttons::updateButtons();

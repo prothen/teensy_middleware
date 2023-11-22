@@ -1,27 +1,22 @@
 #include <Arduino.h>
 
 // Deps needed to interface with the IMU
+#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/MagneticField.h"
+#include "sensor_msgs/Temperature.h"
+
 #include <Adafruit_BNO055.h>
 #include <Adafruit_Sensor.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <utility/imumaths.h>
-
-#include "ros/duration.h"
 #include <ros.h>
+#include <ros/time.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Header.h>
 #include <std_msgs/String.h>
-
-#include "sensor_msgs/Imu.h"
-
-#include "svea_teensy.h"
-
-std_msgs::Header header;
-
+#include <utility/imumaths.h>
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire1);
-
 bool setupIMU() {
     if (!bno.begin()) {
         /* There was a problem detecting the BNO055 ... check your connections */
@@ -30,13 +25,8 @@ bool setupIMU() {
     }
     bno.setExtCrystalUse(true);
     Serial.println("BN0055 detected");
-
-    header.frame_id = "imu";
-    header.seq = 0;
-
     return true;
 }
-
 // ros::Time now,
 void IMUReadingToMsg() {
 
@@ -71,40 +61,11 @@ void IMUReadingToMsg() {
 
     MSG_TEMP.temperature = bno.getTemp();
 
-    //Serial.print("IMU: (");
-    //Serial.print(MSG_IMU.orientation.x);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.orientation.y);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.orientation.z);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.orientation.w);
-    //Serial.print(")  Angular Velocity: (");
-    //Serial.print(MSG_IMU.angular_velocity.x);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.angular_velocity.y);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.angular_velocity.z);
-    //Serial.print(")  Linear Acceleration: (");
-    //Serial.print(MSG_IMU.linear_acceleration.x);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.linear_acceleration.y);
-    //Serial.print(", ");
-    //Serial.print(MSG_IMU.linear_acceleration.z);
-    //Serial.print(")  Magnetic Field: (");
-    //Serial.print(MSG_MAG.magnetic_field.x);
-    //Serial.print(", ");
-    //Serial.print(MSG_MAG.magnetic_field.y);
-    //Serial.print(", ");
-    //Serial.print(MSG_MAG.magnetic_field.z);
-    //Serial.print(")  Temperature: ");
-    //Serial.println(MSG_TEMP.temperature);
-
     int fakeCovariance = 0;
     for (int i = 0; i < 9; ++i) {
-        MSG_IMU.angular_velocity_covariance[i] = fakeCovariance;
-        MSG_IMU.linear_acceleration_covariance[i] = fakeCovariance;
-        MSG_MAG.magnetic_field_covariance[i] = fakeCovariance;
+        msg.orientation_covariance[i] = fakeCovariance;
+        msg.angular_velocity_covariance[i] = fakeCovariance;
+        msg.linear_acceleration_covariance[i] = fakeCovariance;
     }
     //nh.spinOnce();
     //Serial.println("MSG_IMU: ");
@@ -116,6 +77,8 @@ void IMUReadingToMsg() {
     //Serial.println("MSG_TEMP: ");
     imu_temp.publish(&MSG_TEMP);
     nh.spinOnce();
+    //Serial.printf("IMU: Orientation(%f, %f, %f, %f) Angular Velocity(%f, %f, %f) Linear Acceleration(%f, %f, %f)\n", msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z);
+
     return;
 }
 
@@ -123,7 +86,6 @@ void IMU_DEBUG() {
     /* Get a new sensor event */
     sensors_event_t event;
     bno.getEvent(&event);
-
     /* Board layout:
            +----------+
            |         *| RST   PITCH  ROLL  HEADING
@@ -134,7 +96,6 @@ void IMU_DEBUG() {
            |         *| VIN
            +----------+
     */
-
     /* The processing sketch expects data as roll, pitch, heading */
     Serial.print(F("Orientation: "));
     Serial.print((float)event.orientation.x);
