@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 // Deps needed to interface with the IMU
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/MagneticField.h"
@@ -26,61 +27,61 @@ bool setupIMU() {
     Serial.println("BN0055 detected");
     return true;
 }
-// Im sorry, this is the way
-uint32_t headerCntIMU = 0;
-uint32_t headerCntMag = 0;
-uint32_t headerCntTemp = 0;
-void IMUReadingToMsg(ros::Time time, sensor_msgs::Imu &msg) {
-    sensors_event_t event;
-    bno.getEvent(&event);
-    msg.header.seq = headerCntIMU++;
-    msg.header.stamp = time;
-    msg.header.frame_id = "imu";
+// ros::Time now,
+void IMUReadingToMsg() {
+
+    // Header stuff
+    header.stamp = nh.now();
+    header.seq++;
+
+    MSG_IMU.header = header;
+    MSG_MAG.header = header;
+    MSG_TEMP.header = header;
+
     imu::Quaternion quat = bno.getQuat();
-    msg.orientation.x = (float)quat.x();
-    msg.orientation.y = (float)quat.y();
-    msg.orientation.z = (float)quat.z();
-    msg.orientation.w = (float)quat.w();
-    imu::Vector<3> gyroVec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-    msg.angular_velocity.x = (float)gyroVec.x();
-    msg.angular_velocity.y = (float)gyroVec.y();
-    msg.angular_velocity.z = (float)gyroVec.z();
-    imu::Vector<3> accelVec = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
-    msg.linear_acceleration.x = (float)accelVec.x();
-    msg.linear_acceleration.y = (float)accelVec.y();
-    msg.linear_acceleration.z = (float)accelVec.z();
-    float fakeCovariance = 0;
+    MSG_IMU.orientation.x = quat.x();
+    MSG_IMU.orientation.y = quat.y();
+    MSG_IMU.orientation.z = quat.z();
+    MSG_IMU.orientation.w = quat.w();
+    imu::Vector<3> Vec;
+    Vec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    MSG_IMU.angular_velocity.x = Vec.x();
+    MSG_IMU.angular_velocity.y = Vec.y();
+    MSG_IMU.angular_velocity.z = Vec.z();
+
+    Vec = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+    MSG_IMU.linear_acceleration.x = Vec.x();
+    MSG_IMU.linear_acceleration.y = Vec.y();
+    MSG_IMU.linear_acceleration.z = Vec.z();
+
+    Vec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    MSG_MAG.magnetic_field.x = Vec.x();
+    MSG_MAG.magnetic_field.y = Vec.y();
+    MSG_MAG.magnetic_field.z = Vec.z();
+
+    MSG_TEMP.temperature = bno.getTemp();
+
+    int fakeCovariance = 0;
     for (int i = 0; i < 9; ++i) {
         msg.orientation_covariance[i] = fakeCovariance;
         msg.angular_velocity_covariance[i] = fakeCovariance;
         msg.linear_acceleration_covariance[i] = fakeCovariance;
     }
-    Serial.printf("IMU: Orientation(%f, %f, %f, %f) Angular Velocity(%f, %f, %f) Linear Acceleration(%f, %f, %f)\n", msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z);
+    //nh.spinOnce();
+    //Serial.println("MSG_IMU: ");
+    imu_pub.publish(&MSG_IMU);
+    nh.spinOnce();
+    //Serial.println("MSG_MAG: ");
+    imu_mag.publish(&MSG_MAG);
+    nh.spinOnce();
+    //Serial.println("MSG_TEMP: ");
+    imu_temp.publish(&MSG_TEMP);
+    nh.spinOnce();
+    //Serial.printf("IMU: Orientation(%f, %f, %f, %f) Angular Velocity(%f, %f, %f) Linear Acceleration(%f, %f, %f)\n", msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z);
+
+    return;
 }
-void MagReadingToMsg(ros::Time time, sensor_msgs::MagneticField &msg) {
-    sensors_event_t event;
-    bno.getEvent(&event);
-    //msg.header.seq = headerCntMag++;
-    //msg.header.stamp = time;
-    //msg.header.frame_id = "imu";
-    //imu::Vector<3> magVec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER); 
-    //msg.magnetic_field.x = (float)magVec.x();
-    //msg.magnetic_field.y = (float)magVec.y();
-    //msg.magnetic_field.z = (float)magVec.z();
-    msg.magnetic_field.x = 6;
-    //float fakeCovariance = 0;
-    //for (int i = 0; i < 9; ++i) {
-    //    msg.magnetic_field_covariance[i] = fakeCovariance;
-    //}
-    Serial.printf("Magnetic Field: (%f, %f, %f)\n", msg.magnetic_field.x, msg.magnetic_field.y, msg.magnetic_field.z);
-}
-void TempReadingToMsg(ros::Time time, sensor_msgs::Temperature &msg) {
-    msg.header.seq = headerCntTemp++;
-    msg.header.stamp = time;
-    msg.header.frame_id = "t";
-    msg.temperature = (float)bno.getTemp();
-    Serial.printf("Temperature: %f\n", msg.temperature);
-}
+
 void IMU_DEBUG() {
     /* Get a new sensor event */
     sensors_event_t event;

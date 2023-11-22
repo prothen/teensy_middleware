@@ -309,24 +309,33 @@ void rosSetup() {
     nh.initNode();
     // NOTE: Putting advertise before subscribe destroys
     //       EVERYTHING :DDDD~~~~~
+
+    
     nh.subscribe(ctrl_request);
     nh.subscribe(emergency_request);
+   
     nh.advertise(remote_pub);
+    
+    nh.advertise(imu_mag);
+    nh.advertise(imu_pub);
+
+    nh.advertise(imu_temp);
+
     nh.advertise(ctrl_actuated_pub);
     nh.advertise(encoder_pub);
-    nh.advertise(debug_pub);
 
-    nh.advertise(imu_pub);
-    nh.advertise(imu_mag);
-    nh.advertise(imu_temp);
+  
+
+    nh.advertise(debug_pub);
+    nh.negotiateTopics();
 }
 
 //! Arduino setup function
 void setup() {
-    Serial.begin(SERIAL_BAUD_RATE);
+    // Serial.begin(SERIAL_BAUD_RATE);
     setupActuation();
     /* ROS setup */
-    rosSetup();
+    
     pinMode(LED_BUILTIN, OUTPUT);
 
     Wire1.begin();
@@ -334,6 +343,8 @@ void setup() {
     pwm_reader::setup();
     encoders::setup();
     setupIMU();
+
+    rosSetup();
     Serial.println("Setup done");
 }
 
@@ -383,28 +394,7 @@ void loop() {
         encoder_pub.publish(&MSG_ENCODER);
     }
 
-    IMUReadingToMsg(nh.now(), MSG_IMU);
-    MagReadingToMsg(nh.now(), MSG_MAG);
-    TempReadingToMsg(nh.now(), MSG_TEMP);
-    Serial.println("Publishing IMU");
-    imu_pub.publish(&MSG_IMU);
-    Serial.println(sizeof(MSG_IMU)); // Print the size of the structure
-
-    Serial.println("Publishing MAG");
-    Serial.println("Printing MSG_MAG:");
-    Serial.print("Magnetic Field X: ");
-    Serial.println(MSG_MAG.magnetic_field.x);
-
-    Serial.print("Magnetic Field Y: ");
-    Serial.println(MSG_MAG.magnetic_field.y);
-
-    Serial.print("Magnetic Field Z: ");
-    Serial.println(MSG_MAG.magnetic_field.z);
-    Serial.println(sizeof(MSG_MAG)); // Print the size of the structure
-
-    imu_mag.publish(&MSG_MAG);
-    Serial.println("Publishing TEMP");
-    // imu_temp.publish(&MSG_TEMP);
+    IMUReadingToMsg();
 
     // PCB LED Logic
     buttons::updateButtons();
