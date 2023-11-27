@@ -1,0 +1,219 @@
+[33mcommit b65ae8bbbdf8549e9c84097a9751726099bccbeb[m[33m ([m[1;36mHEAD -> [m[1;32mLLI-IMU[m[33m)[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 27 18:41:23 2023 +0100
+
+    Half Merge LLI-IMU-Class
+
+[33mcommit bd0fa03ab29cc96bf985b38e9435fba85cb7a7b8[m[33m ([m[1;31morigin/LLI-IMU[m[33m)[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Wed Nov 22 20:14:04 2023 +0100
+
+    All working, before was a fluke
+
+[33mcommit 1d6fdcbfc88bad7261733f8d19ccef9d152693fb[m
+Merge: e44ef79 0b8a805
+Author: nils_kiefer <21311514+nilsonstine@users.noreply.github.com>
+Date:   Wed Nov 22 19:52:40 2023 +0100
+
+    Merge pull request #4 from KTH-SML/safety-merge-lli-imu
+    
+    IT ALL WORKS LETS GO
+
+[33mcommit 0b8a805a4a3e054978d6fdb73a79d049e429818c[m
+Merge: 32926e8 e44ef79
+Author: nils_kiefer <21311514+nilsonstine@users.noreply.github.com>
+Date:   Wed Nov 22 19:52:13 2023 +0100
+
+    Merge branch 'LLI-IMU' into safety-merge-lli-imu
+
+[33mcommit 32926e898a1e8b287c96fe8d8ee89a4e93352fe1[m[33m ([m[1;32msafety-merge-lli-imu[m[33m)[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Wed Nov 22 19:47:21 2023 +0100
+
+    IT ALL WORKS LETS GO
+
+[33mcommit e44ef79b95eac963b55f8f5a75fd6ed630eba3a9[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Tue Nov 21 20:02:34 2023 +0100
+
+    not working, great
+
+[33mcommit 49dba461e82d23264ccf6b426e45b8fdcbd28c1d[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Tue Nov 21 19:20:03 2023 +0100
+
+    chaos
+
+[33mcommit 04ef5654ef466ef8a4b133a8c0fd0c9a61835368[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Tue Nov 21 17:49:38 2023 +0100
+
+    before disaster
+
+[33mcommit da0a93a4e69285d6d1cc771899a414fc7dee7df8[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Tue Nov 21 17:02:35 2023 +0100
+
+    working even better
+
+[33mcommit 944ed25d8cf4faa0ca79e4a0c21999f871572115[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Tue Nov 21 16:34:30 2023 +0100
+
+    sorta works
+
+[33mcommit cdf64e1fbb5813e18a01a61b5db0d5cc8db44035[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Fri Nov 17 20:37:05 2023 +0100
+
+    latest attempt
+
+[33mcommit 30d88adc0e59b8b4c23709f8b2b03dea82524c00[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Fri Nov 17 19:49:09 2023 +0100
+
+    cleaned up
+
+[33mcommit ad8cec5fdeeee7fb90c1a6ff5fbb2763bb9e7b01[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Fri Nov 17 19:28:23 2023 +0100
+
+    compiled successfully imu
+
+[33mcommit 72dd811647f06b95d5e53240caaccb457c33f3d4[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Thu Nov 16 20:10:06 2023 +0100
+
+    Reformatted and PWM timeout
+
+[33mcommit fbf88d552a46e08aa10e28fb841229cffa4fb30f[m[33m ([m[1;33mtag: V2[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: nils_kiefer <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 17:04:09 2023 +0100
+
+    Update README.md
+
+[33mcommit 8e048d127cfaead2a11be1cf92e50c3fbde2f176[m
+Merge: fc73acb ee0cbb5
+Author: nils_kiefer <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 17:01:16 2023 +0100
+
+    Merge pull request #3 from KTH-SML/Updating-Libraries
+    
+    Updating libraries
+
+[33mcommit ee0cbb59cfc4af32861ac9fdaf49a4542d301ec0[m
+Merge: 459f7e1 fc73acb
+Author: nils_kiefer <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 17:00:40 2023 +0100
+
+    Merge branch 'main' into Updating-Libraries
+
+[33mcommit 459f7e12d0826d2532999405ddf441381d3b6ae9[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 16:56:23 2023 +0100
+
+    Removed code comment
+
+[33mcommit 491c63332713f494ce0045fd3a0a6ec3830bbe8b[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 16:55:00 2023 +0100
+
+    update readme instructions
+
+[33mcommit 63304ad67e8342770f70493d79e649c2dff053a2[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 16:44:58 2023 +0100
+
+    Removed Commented Code
+
+[33mcommit 9839a7be1733b5bf87d99c864dc42c006ff9bd1d[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Mon Nov 13 16:27:33 2023 +0100
+
+    Reorganized Deps
+
+[33mcommit fc73acb31e8110087356c2f963669b53fa12d0fa[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Fri Nov 10 17:57:49 2023 +0100
+
+    fixed sum stuff and name
+
+[33mcommit e6f38adde23fd94a4ace3b8faf4e65e0380506fe[m
+Author: Annika-wyt <yintingwong@gmail.com>
+Date:   Fri Nov 10 16:44:03 2023 +0100
+
+    wokring version
+
+[33mcommit fd8292b9dd693ac9e6740bc956afe4734727b61b[m
+Author: nilsonstine <21311514+nilsonstine@users.noreply.github.com>
+Date:   Thu Nov 9 17:23:06 2023 +0100
+
+    fixed it
+
+[33mcommit 42af46be1e1fb51b1136be3ef450e9a45285f0e1[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Wed Jun 2 16:46:21 2021 +0200
+
+    Added features and ROS related things to README
+
+[33mcommit 9304919451fc2f0e4e98025d481ec72d6e5523cb[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Wed Jun 2 14:37:21 2021 +0200
+
+    Removed targets folder
+
+[33mcommit 2849dd0fe98ba0930ffe611e669e42898933ddd4[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Wed Jun 2 13:47:22 2021 +0200
+
+    Changed read/wirte order of GPIO extender updates
+
+[33mcommit edf34f55cdfcf18f288f70a7bb0352fdec9982b0[m
+Merge: f81e616 e401a97
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Mon May 17 20:15:49 2021 +0200
+
+    Merge branch 'main' of github.com:KTH-SML/svea_lli_firmware into main
+
+[33mcommit f81e616ffab5b121a0c57a673f7265b09c27e3be[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Mon May 17 20:15:12 2021 +0200
+
+    Changed encoder sampling interval
+
+[33mcommit e401a9703d4badceaf905223cfb217ba0de5de25[m
+Merge: 39004e7 728eaf6
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Wed May 12 14:51:46 2021 +0200
+
+    Merge branch 'main' of https://github.com/KTH-SML/svea_lli_firmware into main
+
+[33mcommit 39004e794906d17ffdfd6b767c96173ea26c89fe[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Wed May 12 14:51:10 2021 +0200
+
+    Changed environment order in platformio.ini to match README
+
+[33mcommit 728eaf6309812fe7d4654aafa2b63d9b079ecf87[m
+Author: tbolin <tbolin@kth.se>
+Date:   Wed May 12 14:45:39 2021 +0200
+
+    Updated README with detailed setup instructions
+
+[33mcommit 71070d3317532fab81f490092e03916111c4e2e9[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Fri May 7 18:29:33 2021 +0200
+
+    Added basic usage to README
+
+[33mcommit b0f226babd3313548eb018ee54d530f22b91c8b8[m
+Author: Tobias Bolin <tbolin@kth.se>
+Date:   Fri May 7 17:06:59 2021 +0200
+
+    Refactored repo for SVEA specialization
+
+[33mcommit 984ed0a9845a374c3ae51fe5f51509053bda0243[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m)[m
+Author: Philipp Rothenhäusler <phirot@kth.se>
+Date:   Sat Mar 13 21:40:38 2021 +0100
+
+    Initial commit
