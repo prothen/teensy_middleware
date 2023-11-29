@@ -24,8 +24,20 @@
 
 namespace SVEA {
 
-class IMU {
-
+private:
+    // Class variables for calibration
+    int16_t accel_offset_x;
+    int16_t accel_offset_y;
+    int16_t accel_offset_z;
+    int16_t gyro_offset_x;
+    int16_t gyro_offset_y;
+    int16_t gyro_offset_z;
+    int16_t mag_offset_x;
+    int16_t mag_offset_y;
+    int16_t mag_offset_z;
+    uint8_t accel_radius;
+    uint8_t mag_radius;
+    
     Adafruit_BNO055 bno;
 
     SVEA::NodeHandle &nh;
@@ -38,6 +50,7 @@ class IMU {
     sensor_msgs::MagneticField mag_msg;
     sensor_msgs::Temperature temp_msg;
 
+
   public:
 
     IMU(SVEA::NodeHandle &nh):
@@ -47,6 +60,14 @@ class IMU {
         imu_mag("imu/mag", &mag_msg),
         imu_temp("imu/temp", &temp_msg)
     {
+=======
+public:
+    IMU(SVEA::NodeHandle &nh) : bno(55, 0x28, &Wire1),
+                                nh(nh),
+                                imu_pub("imu/data", &imu_msg),
+                                imu_mag("imu/mag", &mag_msg),
+                                imu_temp("imu/temp", &temp_msg) {
+
         nh.advertise(imu_pub);
         nh.advertise(imu_mag);
         nh.advertise(imu_temp);
@@ -56,15 +77,12 @@ class IMU {
     };
 
     bool open() {
-        bool succ = bno.begin(OPERATION_MODE_NDOF);
-
         if (succ) {
             bno.setExtCrystalUse(true);
             Serial.println("BN0055 detected");
         } else {
             Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
         }
-
         return succ;
     }
 
@@ -88,19 +106,19 @@ class IMU {
         imu_msg.linear_acceleration.x = vec.x();
         imu_msg.linear_acceleration.y = vec.y();
         imu_msg.linear_acceleration.z = vec.z();
+       
+    vec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    imu_msg.angular_velocity.x = Vec.x();
+    imu_msg.angular_velocity.y = Vec.y();
+    imu_msg.angular_velocity.z = Vec.z();
 
-        vec = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-        imu_msg.angular_velocity.x = vec.x();
-        imu_msg.angular_velocity.y = vec.y();
-        imu_msg.angular_velocity.z = vec.z();
-        
         vec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
         mag_msg.magnetic_field.x = vec.x();
         mag_msg.magnetic_field.y = vec.y();
         mag_msg.magnetic_field.z = vec.z();
 
         temp_msg.temperature = bno.getTemp();
-
+// TODO, make more efficient or make sensible covarience, or both
         int fakeCovariance = 0;
         for (int i = 0; i < 9; ++i) {
             imu_msg.orientation_covariance[i] = fakeCovariance;
@@ -115,5 +133,4 @@ class IMU {
     }
 
 };
-    
 } // namespace SVEA
