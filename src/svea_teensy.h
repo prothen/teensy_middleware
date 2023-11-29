@@ -172,31 +172,25 @@ void callbackEmergency(const svea_msgs::lli_emergency &data);
  */
 /*@{*/
 //! NodeHandle class definition
-ros::NodeHandle_<ArduinoHardware,
-                 MAX_ROS_SUBSCRIBERS,
-                 MAX_ROS_PUBLISHERS,
-                 ROS_IN_BUFFER_SIZE,
-                 ROS_OUT_BUFFER_SIZE>
-    nh;
+namespace SVEA {
+typedef ros::NodeHandle_<ArduinoHardware,
+                         MAX_ROS_SUBSCRIBERS,
+                         MAX_ROS_PUBLISHERS,
+                         ROS_IN_BUFFER_SIZE,
+                         ROS_OUT_BUFFER_SIZE> 
+        NodeHandle;
+}
+SVEA::NodeHandle nh;
 lli_ctrl_out_t MSG_REMOTE;   //!< Message used for sending the remote signals
 lli_ctrl_out_t MSG_ACTUATED; //!< Message sending actuated messages
 lli_encoder_t MSG_ENCODER;   //!< Message used for outgoing wheel encoder messages
 lli_encoder_t MSG_DEBUG;
-
-// BN055 Stuff
-sensor_msgs::Imu MSG_IMU;
-sensor_msgs::MagneticField MSG_MAG;
-sensor_msgs::Temperature MSG_TEMP;
 
 //!< Message used for misc debugging
 ros::Publisher remote_pub("lli/remote", &MSG_REMOTE);                 //!< Remote message publisher
 ros::Publisher ctrl_actuated_pub("lli/ctrl_actuated", &MSG_ACTUATED); //!< Actuated control message publisher
 ros::Publisher encoder_pub("lli/encoder", &MSG_ENCODER);
 ros::Publisher debug_pub("lli/debug", &MSG_DEBUG);
-
-ros::Publisher imu_pub("/imu/data", &MSG_IMU);
-ros::Publisher imu_mag("/imu/mag", &MSG_MAG);
-ros::Publisher imu_temp("/imu/temp", &MSG_TEMP);
 
 //!< Encoder reading publisher
 ros::Subscriber<lli_ctrl_in_t> ctrl_request("lli/ctrl_request", &callbackCtrlRequest);            //!< Controll request subscriber
@@ -452,14 +446,13 @@ bool callibrateSteering() {
             int steer_ix = 0;
             max_pwm = DEFAULT_PWM_OUT_MAX_PW[steer_ix];
             min_pwm = DEFAULT_PWM_OUT_MIN_PW[steer_ix];
-            setSteeringPwm(min_pwm, max_pwm);
             //led::setLEDs(led::color_yelow);
+
         }
         break;
     case TURN_LEFT:
         if (buttons::readEvent(calib_button) == buttons::PRESSED) {
             min_pwm = 1000.0 * ACTUATED_TICKS[0] / (PWM_OUT_RES * PWM_OUT_FREQUENCY);
-            state = TURN_RIGHT;
             //led::setLEDs(led::color_blue);
         }
         break;
