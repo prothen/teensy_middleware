@@ -19,7 +19,6 @@
 
 #include "utility.h"
 
-
 //! Setup ROS
 void rosSetup() {
     nh.getHardware()->setBaud(SERIAL_BAUD_RATE);
@@ -60,7 +59,7 @@ void setup() {
     pwm_reader::setup();
     encoders::setup();
 
-    //FastLED.addLeds<SK9822,6>(leds, 1);
+    // FastLED.addLeds<SK9822,6>(leds, 1);
 
     if (!imu_sensor.open()) {
         // TODO: Handle error
@@ -112,36 +111,37 @@ void loop() {
         EncoderReadingToMsg(reading, MSG_ENCODER);
         encoder_pub.publish(&MSG_ENCODER);
         nh.spinOnce();
-      
+    }
     imu_sensor.update();
 
     // PCB LED Logic
-    buttons::updateButtons();
-    if (!callibrateSteering()) {
-        if (servo_idle && !SW_EMERGENCY) {
-            // led::blinkLEDs();
-        } else {
-            // if (SW_IDLE) {
-            //     led::setLED(0, led::color_red);
-            // } else {
-            //     led::setLED(0, led::color_green);
-            // }
-            // if (pwm_reader::REM_IDLE) {
-            //     led::setLED(1, led::color_red);
-            // } else {
-            //     led::setLED(1, led::color_green);
-            // }
-            // if (!pwm_reader::REM_OVERRIDE) {
-            //     led::setLED(2, led::color_red);
-            // } else {
-            //     led::setLED(2, led::color_green);
-            // }
-            // if (!SW_EMERGENCY) {
-            //     led::setLED(3, led::color_red);
-            // } else {
-            //     led::setLED(3, led::color_green);
-            // }
-        } //
-    }
-    led::updateLEDs();
+    // buttons::updateButtons();
+    // if (!callibrateSteering()) {
+    //    if (servo_idle && !SW_EMERGENCY) {
+    //        // led::blinkLEDs();
+    //    } else {
+    //        // if (SW_IDLE) {
+    //        //     led::setLED(0, led::color_red);
+    //        // } else {
+    //        //     led::setLED(0, led::color_green);
+    //        // }
+    //        // if (pwm_reader::REM_IDLE) {
+    //        //     led::setLED(1, led::color_red);
+    //        // } else {
+    //        //     led::setLED(1, led::color_green);
+    //        // }
+    //        // if (!pwm_reader::REM_OVERRIDE) {
+    //        //     led::setLED(2, led::color_red);
+    //        // } else {
+    //        //     led::setLED(2, led::color_green);
+    //        // }
+    //        // if (!SW_EMERGENCY) {
+    //        //     led::setLED(3, led::color_red);
+    //        // } else {
+    //        //     led::setLED(3, led::color_green);
+    //        // }
+    //
+    //    } //
+    //}
+    // led::updateLEDs();
 }
