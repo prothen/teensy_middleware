@@ -57,7 +57,7 @@ void setup() {
     Wire1.begin();
     setup_gpio();
     pwm_reader::setup();
-    encoders::setup();
+    //encoders::setup();
 
     // FastLED.addLeds<SK9822,6>(leds, 1);
 
@@ -106,12 +106,6 @@ void loop() {
         }
     }
 
-    encoders::encoder_reading_t reading;
-    if (encoders::processEncoderTicks(reading)) {
-        EncoderReadingToMsg(reading, MSG_ENCODER);
-        encoder_pub.publish(&MSG_ENCODER);
-        nh.spinOnce();
-    }
     imu_sensor.update();
 
     // PCB LED Logic

@@ -396,13 +396,6 @@ void publishRemoteReading(int8_t actuation_values[5]) {
     remote_pub.publish(&MSG_REMOTE);
 }
 
-void EncoderReadingToMsg(const encoders::encoder_reading_t &reading, lli_encoder_t &msg) {
-    msg.right_ticks = reading.right_ticks;
-    msg.left_ticks = reading.left_ticks;
-    msg.right_time_delta = reading.right_time_delta;
-    msg.left_time_delta = reading.left_time_delta;
-}
-
 /*!
  * @brief Steering callibration functionality. Should be called in every loop update.
  *
