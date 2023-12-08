@@ -34,6 +34,8 @@ private:
 
     uint8_t startByte = 100; // Teensy has 1080 bytes of EEPROM, this is for saving some calib data to eeprom
 
+    int16_t mag_offset_x;
+    int16_t mag_offset_y;
     int16_t mag_offset_z;
     uint8_t accel_radius;
     uint8_t mag_radius;
@@ -68,7 +70,7 @@ private:
         //     Serial.println("No calibration data to save, already calibrated from saved values");
         //     return;
         // }
-        //if (!bno.getSensorOffsets(calData)) {
+        // if (!bno.getSensorOffsets(calData)) {
         //    serialPrintCalibStatus();
         //    return;
         //}
@@ -85,23 +87,38 @@ private:
         }
         loadCalibration();
     }
-    void writeMagCalibration() {
+    //The chip sucks, it will calibrate on its own when it feels like it so this wont make a difference
+    bool writeMagCalibration() {
         if (magCalibrated) {
-            return;
+            return true;
         }
         bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_MAGONLY);
-
+        delay(100);
         if (!bno.getSensorOffsets(calData)) {
             serialPrintCalibStatus();
-            return;
+            return false;
         }
-        calData[16] = mag_offset_z;
-        calData[17] = accel_radius;
-        calData[18] = mag_radius;
+        // Extract magnetometer X-offset
+        mag_offset_x = ((int16_t)calData[7] << 8) | calData[6]; // MAG_OFFSET_X_MSB_ADDR, MAG_OFFSET_X_LSB_ADDR
+
+        // Extract magnetometer Y-offset
+        mag_offset_y = ((int16_t)calData[9] << 8) | calData[8]; // MAG_OFFSET_Y_MSB_ADDR, MAG_OFFSET_Y_LSB_ADDR
+
+        // Extract magnetometer Z-offset
+        mag_offset_z = ((int16_t)calData[11] << 8) | calData[10]; // MAG_OFFSET_Z_MSB_ADDR, MAG_OFFSET_Z_LSB_ADDR
+
+        // Extract accelerometer radius
+        accel_radius = ((int16_t)calData[19] << 8) | calData[18]; // ACCEL_RADIUS_MSB_ADDR, ACCEL_RADIUS_LSB_ADDR
+
+        // Extract magnetometer radius
+        mag_radius = ((int16_t)calData[21] << 8) | calData[20]; // MAG_RADIUS_MSB_ADDR, MAG_RADIUS_LSB_ADDR
+
         bno.setSensorOffsets(calData);
         magCalibrated = true;
         bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
+        delay(100);
         Serial.println("Mag Calibrated");
+        return true;
     }
     void serialPrintCalibStatus() {
         // Print the calibration status for each sensor
@@ -119,10 +136,9 @@ private:
         Serial.println(mag, DEC);
         return;
     }
-    void debugPrint(){
-       
-    
+    void debugPrint() {
     }
+
 public:
     IMU(SVEA::NodeHandle &nh) : bno(55, 0x28, &Wire1),
                                 nh(nh),
@@ -193,8 +209,38 @@ public:
         imu_pub.publish(&imu_msg);
         imu_mag.publish(&mag_msg);
         imu_temp.publish(&temp_msg);
-        //saveCalibration();
-        writeMagCalibration();
+        // if (writeMagCalibration()) {
+        Serial.print("Mag Offset X: ");
+        Serial.print(mag_offset_x);
+        Serial.print(", Mag Offset Y: ");
+        Serial.print(mag_offset_y);
+        Serial.print(", Mag Offset Z: ");
+        Serial.print(mag_offset_z);
+        Serial.print(", Mag Radius: ");
+        Serial.print(mag_radius);
+
+        // Assuming mag_msg.magnetic_field.x and mag_msg.magnetic_field.y are the magnetic field readings
+        float heading = atan2(mag_msg.magnetic_field.y, mag_msg.magnetic_field.x);
+
+        // Convert from radians to degrees
+        heading = heading * (180.0 / PI)+90;
+
+        // Normalize to 0-360 degrees
+        if (heading < 0) {
+            heading = 360 + heading;
+        }
+        if(heading > 360) {
+            heading = heading - 360;
+        }
+
+        vec = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+
+        Serial.print("Magnetic Field X: " + String(mag_msg.magnetic_field.x) + " Y:" + String(mag_msg.magnetic_field.y) + " Z:" + String(mag_msg.magnetic_field.z) + " Heading: " + String(vec.x()) + " degrees" + "Basic Heading: " + String(heading));
+
+        Serial.println();
+        // }
+
+        // saveCalibration();
     }
 };
 } // namespace SVEA
