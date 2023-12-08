@@ -52,93 +52,6 @@ private:
     sensor_msgs::MagneticField mag_msg;
     sensor_msgs::Temperature temp_msg;
 
-    void loadCalibration() {
-        if (EEPROM.read(startByte) != 0x55) {
-            Serial.println("No calibration data found in EEPROM");
-            return; // Check for a flag value to see if we have saved data
-        }
-        uint8_t calData[22];
-        for (int i = startByte; i < 22; i++) {
-            calData[i] = EEPROM.read(i + 1);
-        }
-        Serial.println("Found calibration data in EEPROM");
-        bno.setSensorOffsets(calData);
-        hasCalibrated = true;
-    }
-    void saveCalibration() {
-        // if (!hasCalibrated) {
-        //     Serial.println("No calibration data to save, already calibrated from saved values");
-        //     return;
-        // }
-        // if (!bno.getSensorOffsets(calData)) {
-        //    serialPrintCalibStatus();
-        //    return;
-        //}
-
-        // VERY DANGEROUS, DONT WRITE TOO MUCH TO THE EEPROM, please keep the "safety if"
-        // this makes it so one only writes to the EEPROM once per power cycle
-        if (!hasWrittenToEEPROM) {
-            Serial.println("Writing to EEPROM");
-            EEPROM.write(startByte, 0x55); // Write a flag value to indicate that cal data follows
-            for (int i = startByte; i < 22; i++) {
-                EEPROM.write(i + 1, calData[i]);
-            }
-            hasWrittenToEEPROM = true;
-        }
-        loadCalibration();
-    }
-    //The chip sucks, it will calibrate on its own when it feels like it so this wont make a difference
-    bool writeMagCalibration() {
-        if (magCalibrated) {
-            return true;
-        }
-        bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_MAGONLY);
-        delay(100);
-        if (!bno.getSensorOffsets(calData)) {
-            serialPrintCalibStatus();
-            return false;
-        }
-        // Extract magnetometer X-offset
-        mag_offset_x = ((int16_t)calData[7] << 8) | calData[6]; // MAG_OFFSET_X_MSB_ADDR, MAG_OFFSET_X_LSB_ADDR
-
-        // Extract magnetometer Y-offset
-        mag_offset_y = ((int16_t)calData[9] << 8) | calData[8]; // MAG_OFFSET_Y_MSB_ADDR, MAG_OFFSET_Y_LSB_ADDR
-
-        // Extract magnetometer Z-offset
-        mag_offset_z = ((int16_t)calData[11] << 8) | calData[10]; // MAG_OFFSET_Z_MSB_ADDR, MAG_OFFSET_Z_LSB_ADDR
-
-        // Extract accelerometer radius
-        accel_radius = ((int16_t)calData[19] << 8) | calData[18]; // ACCEL_RADIUS_MSB_ADDR, ACCEL_RADIUS_LSB_ADDR
-
-        // Extract magnetometer radius
-        mag_radius = ((int16_t)calData[21] << 8) | calData[20]; // MAG_RADIUS_MSB_ADDR, MAG_RADIUS_LSB_ADDR
-
-        bno.setSensorOffsets(calData);
-        magCalibrated = true;
-        bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
-        delay(100);
-        Serial.println("Mag Calibrated");
-        return true;
-    }
-    void serialPrintCalibStatus() {
-        // Print the calibration status for each sensor
-        uint8_t system, gyro, accel, mag;
-        system = gyro = accel = mag = 0;
-        bno.getCalibration(&system, &gyro, &accel, &mag);
-
-        Serial.print("Sys=");
-        Serial.print(system, DEC);
-        Serial.print(" Gyro=");
-        Serial.print(gyro, DEC);
-        Serial.print(" Accel=");
-        Serial.print(accel, DEC);
-        Serial.print(" Mag=");
-        Serial.println(mag, DEC);
-        return;
-    }
-    void debugPrint() {
-    }
-
 public:
     IMU(SVEA::NodeHandle &nh) : bno(55, 0x28, &Wire1),
                                 nh(nh),
@@ -209,38 +122,6 @@ public:
         imu_pub.publish(&imu_msg);
         imu_mag.publish(&mag_msg);
         imu_temp.publish(&temp_msg);
-        // if (writeMagCalibration()) {
-        Serial.print("Mag Offset X: ");
-        Serial.print(mag_offset_x);
-        Serial.print(", Mag Offset Y: ");
-        Serial.print(mag_offset_y);
-        Serial.print(", Mag Offset Z: ");
-        Serial.print(mag_offset_z);
-        Serial.print(", Mag Radius: ");
-        Serial.print(mag_radius);
-
-        // Assuming mag_msg.magnetic_field.x and mag_msg.magnetic_field.y are the magnetic field readings
-        float heading = atan2(mag_msg.magnetic_field.y, mag_msg.magnetic_field.x);
-
-        // Convert from radians to degrees
-        heading = heading * (180.0 / PI)+90;
-
-        // Normalize to 0-360 degrees
-        if (heading < 0) {
-            heading = 360 + heading;
-        }
-        if(heading > 360) {
-            heading = heading - 360;
-        }
-
-        vec = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
-        Serial.print("Magnetic Field X: " + String(mag_msg.magnetic_field.x) + " Y:" + String(mag_msg.magnetic_field.y) + " Z:" + String(mag_msg.magnetic_field.z) + " Heading: " + String(vec.x()) + " degrees" + "Basic Heading: " + String(heading));
-
-        Serial.println();
-        // }
-
-        // saveCalibration();
     }
 };
 } // namespace SVEA
