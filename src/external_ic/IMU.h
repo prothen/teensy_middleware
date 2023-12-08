@@ -59,10 +59,13 @@ public:
                                 imu_mag("imu/mag", &mag_msg),
                                 imu_temp("imu/temp", &temp_msg) {
         nh.advertise(imu_pub);
+        nh.negotiateTopics();
         nh.advertise(imu_mag);
+        nh.negotiateTopics();
         nh.advertise(imu_temp);
+        nh.negotiateTopics();
 
-        header.frame_id = "imu-uncalibrated";
+        header.frame_id = "imu";
         header.seq = 0;
     }
 
@@ -71,6 +74,7 @@ public:
         if (succ) {
             bno.setExtCrystalUse(true);
             Serial.println("BNO055 detected");
+            header.frame_id = "imu";
         } else {
             Serial.print("Oops, no BNO055 detected ... Check your wiring or I2C ADDR!");
             header.frame_id = "imu-disconnected";
@@ -104,7 +108,8 @@ public:
         imu_msg.angular_velocity.y = vec.y();
         imu_msg.angular_velocity.z = vec.z();
 
-        vec = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+        // Magnometer
+        vec = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
         mag_msg.magnetic_field.x = vec.x();
         mag_msg.magnetic_field.y = vec.y();
         mag_msg.magnetic_field.z = vec.z();
