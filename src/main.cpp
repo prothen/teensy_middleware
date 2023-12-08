@@ -27,28 +27,33 @@ void rosSetup() {
     //       EVERYTHING :DDDD~~~~~
 
     nh.subscribe(ctrl_request);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 
     nh.subscribe(emergency_request);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 
     nh.advertise(remote_pub);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 
     nh.advertise(ctrl_actuated_pub);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 
     nh.advertise(encoder_pub);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 
     nh.advertise(debug_pub);
-    nh.negotiateTopics();
+    // nh.negotiateTopics();
 }
 
 SVEA::IMU imu_sensor(nh);
 
 //! Arduino setup function
 void setup() {
+    while (!Serial) {
+        ; // wait for serial port to connect. Needed for native USB
+    }
+    Serial.println("Starting setup");
+    
     while (nh.connected()) {
         nh.spinOnce();
     }
@@ -57,7 +62,7 @@ void setup() {
     Wire1.begin();
     setup_gpio();
     pwm_reader::setup();
-    //encoders::setup();
+    // encoders::setup();
 
     // FastLED.addLeds<SK9822,6>(leds, 1);
 

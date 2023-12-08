@@ -25,15 +25,14 @@
 namespace SVEA {
 class IMU {
 private:
-    // Class variables for calibration
-    int16_t accel_offset_x;
-    int16_t accel_offset_y;
-    int16_t accel_offset_z;
-    int16_t gyro_offset_x;
-    int16_t gyro_offset_y;
-    int16_t gyro_offset_z;
-    int16_t mag_offset_x;
-    int16_t mag_offset_y;
+    bool hasCalibrated = false;
+    bool hasWrittenToEEPROM = false; // Safety bool, dont change
+
+    bool magCalibrated = false; // Magnometer is more succeptible to interference, so it needs to be calibrated more often
+
+    uint8_t calData[22];
+
+    uint8_t startByte = 100; // Teensy has 1080 bytes of EEPROM, this is for saving some calib data to eeprom
 
     int16_t mag_offset_z;
     uint8_t accel_radius;
@@ -51,6 +50,79 @@ private:
     sensor_msgs::MagneticField mag_msg;
     sensor_msgs::Temperature temp_msg;
 
+    void loadCalibration() {
+        if (EEPROM.read(startByte) != 0x55) {
+            Serial.println("No calibration data found in EEPROM");
+            return; // Check for a flag value to see if we have saved data
+        }
+        uint8_t calData[22];
+        for (int i = startByte; i < 22; i++) {
+            calData[i] = EEPROM.read(i + 1);
+        }
+        Serial.println("Found calibration data in EEPROM");
+        bno.setSensorOffsets(calData);
+        hasCalibrated = true;
+    }
+    void saveCalibration() {
+        // if (!hasCalibrated) {
+        //     Serial.println("No calibration data to save, already calibrated from saved values");
+        //     return;
+        // }
+        //if (!bno.getSensorOffsets(calData)) {
+        //    serialPrintCalibStatus();
+        //    return;
+        //}
+
+        // VERY DANGEROUS, DONT WRITE TOO MUCH TO THE EEPROM, please keep the "safety if"
+        // this makes it so one only writes to the EEPROM once per power cycle
+        if (!hasWrittenToEEPROM) {
+            Serial.println("Writing to EEPROM");
+            EEPROM.write(startByte, 0x55); // Write a flag value to indicate that cal data follows
+            for (int i = startByte; i < 22; i++) {
+                EEPROM.write(i + 1, calData[i]);
+            }
+            hasWrittenToEEPROM = true;
+        }
+        loadCalibration();
+    }
+    void writeMagCalibration() {
+        if (magCalibrated) {
+            return;
+        }
+        bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_MAGONLY);
+
+        if (!bno.getSensorOffsets(calData)) {
+            serialPrintCalibStatus();
+            return;
+        }
+        calData[16] = mag_offset_z;
+        calData[17] = accel_radius;
+        calData[18] = mag_radius;
+        bno.setSensorOffsets(calData);
+        magCalibrated = true;
+        bno.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_NDOF);
+        Serial.println("Mag Calibrated");
+    }
+    void serialPrintCalibStatus() {
+        // Print the calibration status for each sensor
+        uint8_t system, gyro, accel, mag;
+        system = gyro = accel = mag = 0;
+        bno.getCalibration(&system, &gyro, &accel, &mag);
+
+        Serial.print("Sys=");
+        Serial.print(system, DEC);
+        Serial.print(" Gyro=");
+        Serial.print(gyro, DEC);
+        Serial.print(" Accel=");
+        Serial.print(accel, DEC);
+        Serial.print(" Mag=");
+        Serial.println(mag, DEC);
+        return;
+    }
+    void debugPrint(){
+       
+    
+    }
 public:
     IMU(SVEA::NodeHandle &nh) : bno(55, 0x28, &Wire1),
                                 nh(nh),
@@ -61,7 +133,7 @@ public:
         nh.advertise(imu_mag);
         nh.advertise(imu_temp);
 
-        header.frame_id = "imu";
+        header.frame_id = "imu-uncalibrated";
         header.seq = 0;
     }
 
@@ -72,6 +144,7 @@ public:
             Serial.println("BNO055 detected");
         } else {
             Serial.print("Oops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+            header.frame_id = "imu-disconnected";
         }
         return succ;
     }
@@ -120,6 +193,8 @@ public:
         imu_pub.publish(&imu_msg);
         imu_mag.publish(&mag_msg);
         imu_temp.publish(&temp_msg);
+        //saveCalibration();
+        writeMagCalibration();
     }
 };
 } // namespace SVEA
